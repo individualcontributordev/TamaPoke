@@ -75,6 +75,16 @@ class G:
                 if dx * dx + dy * dy <= 1.0:
                     self.g[y][x] = '.'
 
+    def seg(self, x0, y0, x1, y1, r, ch):
+        dx, dy = x1 - x0, y1 - y0
+        L2 = dx * dx + dy * dy
+        for y in range(self.size):
+            for x in range(self.size):
+                t = max(0, min(1, ((x - x0) * dx + (y - y0) * dy) / L2))
+                px, py = x0 + t * dx, y0 + t * dy
+                if (x - px) ** 2 + (y - py) ** 2 <= r * r:
+                    self.g[y][x] = ch
+
     def outline(self):
         out = [row[:] for row in self.g]
         for y in range(self.size):
@@ -403,13 +413,66 @@ def heart():
 
 # ------------------------------------------------------------ iconos botones
 
-def icon_food():
+def icon_berry():
     g = G(16)
-    g.disk(8, 9.5, 5.2, 4.8, 'r', 'R')
-    g.px(8, 3, 'C'); g.px(8, 4, 'C')
-    g.px(10, 3, 'g'); g.px(11, 3, 'g'); g.px(11, 2, 'g')
+
+    def berry(cx, cy, r):
+        # dark rim first so overlapping berries stay separated
+        g.disk(cx, cy, r + 0.95, r + 0.95, 'k')
+        g.disk(cx, cy, r, r, 'p', 'P')
+        g.px(round(cx - r * 0.45), round(cy - r * 0.45), 'w')
+        g.px(round(cx), round(cy - r * 0.6), 'G')   # green calyx
+
+    # leaf and stem behind, then the berries back to front
+    g.disk(11.2, 3.2, 3.2, 1.8, 'k')
+    g.disk(11.2, 3.2, 2.3, 0.9, 'g')
+    g.rect(8, 2, 8, 5, 'k')
+    berry(5.3, 8.2, 3.3)
+    berry(10.6, 8.2, 3.3)
+    berry(8.0, 11.9, 3.4)
+    g.px(8, 4, 'C'); g.px(8, 3, 'C')
+    return g.rows()
+
+
+def icon_banana():
+    g = G(16)
+    g.disk(7.2, 7.4, 7.6, 7.6, 'f', 'Y')
+    g.erase(4.4, 4.6, 6.4, 6.4)
+    g.px(13, 2, 'C'); g.px(14, 2, 'C'); g.px(13, 3, 'C')
+    g.px(1, 11, 'C'); g.px(1, 12, 'C'); g.px(2, 12, 'C')
     g.outline()
-    g.px(6, 7, 'w'); g.px(5, 8, 'w')
+    g.px(9, 11, 'w'); g.px(10, 10, 'w')
+    return g.rows()
+
+
+def icon_fish():
+    g = G(16)
+    g.disk(9, 8.2, 5.6, 4.0, 'b', 'B')
+    # tail
+    for x, y0, y1 in ((1, 4, 12), (2, 5, 11), (3, 6, 10), (4, 7, 9)):
+        g.rect(x, y0, x, y1, 'B')
+    g.rect(5, 8, 5, 8, 'b')
+    # belly
+    g.rect(7, 10, 12, 10, 'w')
+    # dorsal fin
+    g.rect(8, 3, 10, 5, 'B')
+    g.outline()
+    g.rect(11, 6, 12, 7, 'w'); g.px(12, 7, 'k')
+    g.px(8, 6, 'B'); g.px(8, 8, 'B'); g.px(8, 7, 'B')
+    return g.rows()
+
+
+def icon_meat():
+    g = G(16)
+    g.seg(8, 8, 12.2, 12.2, 1.6, 'w')
+    g.disk(13.2, 12.0, 1.9, 1.9, 'w')
+    g.disk(12.0, 13.4, 1.9, 1.9, 'w')
+    g.disk(6.2, 6.0, 5.4, 4.9, 'c', 'C')
+    g.outline()
+    g.disk(5.0, 4.6, 1.6, 1.2, 'o')
+    g.px(4, 4, 'w')
+    # bone interior stays light inside its outline
+    g.seg(9, 9, 11.4, 11.4, 0.6, 'y')
     return g.rows()
 
 
@@ -434,38 +497,6 @@ def icon_light():
     return g.rows()
 
 
-def icon_berry_blue():
-    g = G(16)
-    g.disk(8, 9.5, 5.2, 4.8, 'b', 'B')
-    g.px(8, 3, 'C'); g.px(8, 4, 'C')
-    g.px(10, 3, 'g'); g.px(11, 2, 'g')
-    g.outline()
-    g.px(6, 7, 'w'); g.px(5, 8, 'w')
-    return g.rows()
-
-
-def icon_berry_green():
-    g = G(16)
-    g.disk(8, 9.5, 5.2, 4.8, 'g', 'G')
-    g.px(8, 3, 'C'); g.px(8, 4, 'C')
-    g.px(10, 3, 't'); g.px(11, 2, 't')
-    g.outline()
-    g.px(6, 7, 'w'); g.px(5, 8, 'w')
-    return g.rows()
-
-
-def icon_candy():
-    g = G(16)
-    g.disk(8, 8, 4.4, 3.6, 'p', 'P')
-    # envoltorio: picos a los lados
-    g.px(2, 6, 'p'); g.px(2, 8, 'p'); g.px(2, 10, 'p'); g.rect(3, 7, 3, 9, 'p')
-    g.px(13, 6, 'p'); g.px(13, 8, 'p'); g.px(13, 10, 'p'); g.rect(12, 7, 12, 9, 'p')
-    g.outline()
-    g.px(7, 6, 'w'); g.px(6, 7, 'w')
-    g.px(8, 8, 'P'); g.px(9, 9, 'P')
-    return g.rows()
-
-
 def icon_clean():
     g = G(16)
     g.disk(7, 10, 4.6, 4.4, 'b', 'B')
@@ -486,13 +517,13 @@ SPRITES = {
     "SQUIRTLE": squirtle(),
     "WARTORTLE": wartortle(),
     "BLASTOISE": blastoise(),
-    "ICON_FOOD": icon_food(),
+    "ICON_BERRY": icon_berry(),
     "ICON_PLAY": icon_play(),
     "ICON_LIGHT": icon_light(),
     "ICON_CLEAN": icon_clean(),
-    "ICON_BERRY_B": icon_berry_blue(),
-    "ICON_BERRY_G": icon_berry_green(),
-    "ICON_CANDY": icon_candy(),
+    "ICON_BANANA": icon_banana(),
+    "ICON_FISH": icon_fish(),
+    "ICON_MEAT": icon_meat(),
     "EGG": egg(),
     "POOP": poop(),
     "HEART": heart(),

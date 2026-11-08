@@ -120,11 +120,11 @@ public:
   uint8_t energy = 80;    // energia
   uint8_t hygiene = 100;  // limpieza
   uint8_t poops = 0;      // cacas en pantalla (max 3)
-  uint8_t weight = 0;     // 0-100: las chuches engordan, el minijuego quema
+  uint8_t weight = 0;     // 0-100: meat fattens, the minigame burns
   // genes (90-110%, se tiran al eclosionar) y entrenamiento (0-100)
   uint8_t geneAtk = 100, geneDef = 100, geneSpe = 100;
   uint8_t trAtk = 0, trDef = 0, trSpe = 0;
-  bool berryKnown = false;  // ya descubrio su baya favorita
+  bool berryKnown = false;  // already found its favourite food
   bool shiny = false;       // variante de color rara (se sortea en el huevo)
   uint32_t ageMinutes = 0;
   int16_t speciesId = -1;      // numero de Pokedex (1-DEX_COUNT), -1 = huevo
@@ -186,9 +186,9 @@ public:
   bool update(uint32_t nowMs);  // true cuando avanzo el estado del bicho
 
   // Acciones (botones tactiles)
-  void feed();              // baya roja (compatibilidad)
-  void feedBerry(uint8_t color);  // 0 roja, 1 azul, 2 verde
-  void feedCandy();
+  void feed();              // berry (compat)
+  void feedBerry(uint8_t color);  // 0 berry, 1 banana, 2 fish
+  void feedMeat();          // hearty but heavy
   bool lovesBerry(uint8_t color) const {
     return !isEgg() && (speciesId % 3) == color;  // gusto oculto por especie
   }

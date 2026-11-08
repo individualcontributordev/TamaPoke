@@ -416,6 +416,6 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  std::cout << "Alle battle.cpp-Tests bestanden\n";
+  std::cout << "All battle.cpp tests passed\n";
   return EXIT_SUCCESS;
 }

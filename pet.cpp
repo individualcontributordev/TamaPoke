@@ -916,12 +916,12 @@ void Pet::feedBerry(uint8_t color) {
   save();
 }
 
-void Pet::feedCandy() {
+void Pet::feedMeat() {
   if (ceremony != CER_NONE) return;
   if (isEgg() || sleeping) return;
-  fullness = clamp100(fullness + 10);
-  joy = clamp100(joy + 12);
-  weight = clamp100(weight + 12);  // las chuches pasan factura
+  fullness = clamp100(fullness + 30);
+  joy = clamp100(joy + 6);
+  weight = clamp100(weight + 8);  // hearty meal: it shows on the scale
   eatUntil = millis() + EAT_ANIM_MS;
   registerCare();
   noteDailyGoal(DAILY_GOAL_CARE, 1);

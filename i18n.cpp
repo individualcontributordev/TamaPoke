@@ -21,7 +21,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PUNTOS: %u", "Que felicidad!", "+felicidad",
     "AJUSTAR HORA", "HORA", "MIN", "desliza arriba: cancelar", "Idioma",
     "MEDALLA!", "GENIAL!", "RACHA %u DIAS!",
-    "RACHA %u  rec %u", "VIN", "BAYA ???", "BAYA ROJA", "BAYA AZUL", "BAYA VERDE",
+    "RACHA %u  rec %u", "VIN", "GUSTA ???", "GUSTA BAYA", "GUSTA PLATANO", "GUSTA PESCADO",
     "%s   EDAD %lud", "toca el nombre: renombrar",
     "COMBATE", "FUE", "DEF", "VEL", "PES", "ENTRENAR FUERZA",
     "MEDALLAS %d/%d", "toca: volver",
@@ -69,6 +69,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PASOS", "HOY %lu", "TOTAL %lu", "RANGO RUTA %u",
     "SHINY 1/%u", "CAPTURA +%u%%", "PASO %lu", "BONUS DE PASOS", "COSTA", "VOLCAN", "BOSQUE", "SELLOS %u/3", "PASOS %u/%u", "BONUS GANADO",
     "Vinculo 50+",
+    "BAYA", "PLATANO", "PESCADO", "CARNE",
   },
   // ---------------- EN ----------------
   {
@@ -83,7 +84,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "SCORE: %u", "So much fun!", "+happiness",
     "SET TIME", "HOUR", "MIN", "swipe up: cancel", "Lang",
     "MEDAL!", "AWESOME!", "%u DAY STREAK!",
-    "STREAK %u  best %u", "BOND", "BERRY ???", "RED BERRY", "BLUE BERRY", "GREEN BERRY",
+    "STREAK %u  best %u", "BOND", "LIKES ???", "LIKES BERRY", "LIKES BANANA", "LIKES FISH",
     "%s   AGE %lud", "tap name: rename",
     "BATTLE", "ATK", "DEF", "SPD", "WGT", "TRAIN STRENGTH",
     "MEDALS %d/%d", "tap: back",
@@ -131,6 +132,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "STEPS", "TODAY %lu", "TOTAL %lu", "TRAIL RANK %u",
     "SHINY 1/%u", "CATCH +%u%%", "STEP %lu", "TRAIL REWARD", "COAST", "VOLCANO", "FOREST", "SEALS %u/3", "STEPS %u/%u", "WALK BONUS EARNED",
     "Need bond 50+",
+    "BERRY", "BANANA", "FISH", "MEAT",
   },
   // ---------------- FR ----------------
   {
@@ -145,7 +147,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "SCORE: %u", "Trop bien!", "+bonheur",
     "REGLER L'HEURE", "HEURE", "MIN", "glisse haut: annuler", "Langue",
     "MEDAILLE!", "SUPER!", "SERIE %u JOURS!",
-    "SERIE %u  rec %u", "LIEN", "BAIE ???", "BAIE ROUGE", "BAIE BLEUE", "BAIE VERTE",
+    "SERIE %u  rec %u", "LIEN", "AIME ???", "AIME BAIE", "AIME BANANE", "AIME POISSON",
     "%s   AGE %lud", "touche le nom: renommer",
     "COMBAT", "ATQ", "DEF", "VIT", "PDS", "ENTRAINER FORCE",
     "MEDAILLES %d/%d", "touche: retour",
@@ -193,6 +195,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PAS", "AUJOURD'HUI %lu", "TOTAL %lu", "RANG TRAIL %u",
     "SHINY 1/%u", "CAPTURE +%u%%", "PAS %lu", "BONUS DE PAS", "COTE", "VOLCAN", "FORET", "SCEAUX %u/3", "PAS %u/%u", "BONUS DE MARCHE",
     "Lien 50 requis",
+    "BAIE", "BANANE", "POISSON", "VIANDE",
   },
   // ---------------- DE ----------------
   {
@@ -207,7 +210,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PUNKTE: %u", "Wie schoen!", "+Freude",
     "ZEIT STELLEN", "STD", "MIN", "hoch wischen: abbruch", "Sprache",
     "MEDAILLE!", "TOLL!", "%u TAGE SERIE!",
-    "SERIE %u  rek %u", "BND", "BEERE ???", "ROTE BEERE", "BLAUE BEERE", "GRUENE BEERE",
+    "SERIE %u  rek %u", "BND", "MAG ???", "MAG BEERE", "MAG BANANE", "MAG FISCH",
     "%s   ALTER %lud", "Name tippen: umbenennen",
     "KAMPF", "ANG", "VER", "INI", "GEW", "KRAFT TRAINIEREN",
     "MEDAILLEN %d/%d", "tippen: zurueck",
@@ -255,6 +258,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "SCHRITTE", "HEUTE %lu", "GESAMT %lu", "TRAIL-RANG %u",
     "SHINY 1/%u", "FANG +%u%%", "SCHRITT %lu", "SCHRITT-BONUS", "KUESTE", "VULKAN", "WALD", "SIEGEL %u/3", "SCHRITTE %u/%u", "GEHBONUS VERDIENT",
     "Bindung 50 noetig",
+    "BEERE", "BANANE", "FISCH", "FLEISCH",
   },
   // ---------------- IT ----------------
   {
@@ -269,7 +273,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PUNTI: %u", "Che gioia!", "+felicita",
     "IMPOSTA ORA", "ORA", "MIN", "scorri su: annulla", "Lingua",
     "MEDAGLIA!", "GRANDE!", "SERIE %u GIORNI!",
-    "SERIE %u  rec %u", "LEG", "BACCA ???", "BACCA ROSSA", "BACCA BLU", "BACCA VERDE",
+    "SERIE %u  rec %u", "LEG", "AMA ???", "AMA BACCA", "AMA BANANA", "AMA PESCE",
     "%s   ETA %lud", "tocca il nome: rinomina",
     "LOTTA", "ATT", "DIF", "VEL", "PES", "ALLENA FORZA",
     "MEDAGLIE %d/%d", "tocca: indietro",
@@ -317,6 +321,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PASSI", "OGGI %lu", "TOTALE %lu", "RANGO TRAIL %u",
     "SHINY 1/%u", "PRESA +%u%%", "PASSO %lu", "BONUS PASSI", "COSTA", "VULCANO", "BOSCO", "SIGILLI %u/3", "PASSI %u/%u", "BONUS OTTENUTO",
     "Legame 50+",
+    "BACCA", "BANANA", "PESCE", "CARNE",
   },
   // ---------------- PT ----------------
   {
@@ -331,7 +336,7 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PONTOS: %u", "Que alegria!", "+alegria",
     "AJUSTAR HORA", "HORA", "MIN", "deslize cima: cancelar", "Idioma",
     "MEDALHA!", "OTIMO!", "%u DIAS SEGUIDOS!",
-    "SEQ %u  rec %u", "LACO", "BAGA ???", "BAGA VERMELHA", "BAGA AZUL", "BAGA VERDE",
+    "SEQ %u  rec %u", "LACO", "GOSTA ???", "GOSTA BAGA", "GOSTA BANANA", "GOSTA PEIXE",
     "%s   IDADE %lud", "toque no nome: renomear",
     "COMBATE", "ATQ", "DEF", "VEL", "PES", "TREINAR FORCA",
     "MEDALHAS %d/%d", "toque: voltar",
@@ -379,38 +384,39 @@ static const char *const STRINGS[LANG_COUNT][STR_COUNT] = {
     "PASSOS", "HOJE %lu", "TOTAL %lu", "RANK TRILHA %u",
     "SHINY 1/%u", "CAPTURA +%u%%", "PASSO %lu", "BONUS PASSOS", "COSTA", "VULCAO", "FLORESTA", "SELOS %u/3", "PASSOS %u/%u", "BONUS GANHO",
     "Laco 50+",
+    "BAGA", "BANANA", "PEIXE", "CARNE",
   },
 };
 
 // Nombres de medalla en sus tres longitudes [idioma][medalla].
 static const char *const MED_NAME[LANG_COUNT][MED_COUNT] = {
-  { "Nv.10", "Nv.25", "Nv.50", "BAYA", "RACHA 7", "VINCULO", "FORMA TOPE", "EN FORMA", "EXPLORADOR HOENN" },
-  { "Lv.10", "Lv.25", "Lv.50", "BERRY", "7 STREAK", "BOND", "TOP FORM", "IN SHAPE", "HOENN EXPLORER" },
-  { "Niv.10", "Niv.25", "Niv.50", "BAIE", "SERIE 7", "LIEN", "FORME MAX", "EN FORME", "EXPLORATEUR HOENN" },
-  { "Lv.10", "Lv.25", "Lv.50", "BEERE", "7 SERIE", "BINDUNG", "ENDFORM", "FIT", "HOENN FORSCHER" },
-  { "Lv.10", "Lv.25", "Lv.50", "BACCA", "SERIE 7", "LEGAME", "FORMA MAX", "IN FORMA", "ESPLORATORE HOENN" },
-  { "Niv.10", "Niv.25", "Niv.50", "BAGA", "SEQ 7", "LACO", "FORMA MAX", "EM FORMA", "EXPLORADOR HOENN" },
+  { "Nv.10", "Nv.25", "Nv.50", "COMIDA FAV", "RACHA 7", "VINCULO", "FORMA TOPE", "EN FORMA", "EXPLORADOR HOENN" },
+  { "Lv.10", "Lv.25", "Lv.50", "FAV FOOD", "7 STREAK", "BOND", "TOP FORM", "IN SHAPE", "HOENN EXPLORER" },
+  { "Niv.10", "Niv.25", "Niv.50", "PLAT PREF", "SERIE 7", "LIEN", "FORME MAX", "EN FORME", "EXPLORATEUR HOENN" },
+  { "Lv.10", "Lv.25", "Lv.50", "LIEBLING", "7 SERIE", "BINDUNG", "ENDFORM", "FIT", "HOENN FORSCHER" },
+  { "Lv.10", "Lv.25", "Lv.50", "CIBO PREF", "SERIE 7", "LEGAME", "FORMA MAX", "IN FORMA", "ESPLORATORE HOENN" },
+  { "Niv.10", "Niv.25", "Niv.50", "COMIDA FAV", "SEQ 7", "LACO", "FORMA MAX", "EM FORMA", "EXPLORADOR HOENN" },
 };
 static const char *const MED_LBL[LANG_COUNT][MED_COUNT] = {
-  { "Nv10", "Nv25", "Nv50", "BAYA", "7DIAS", "VINC", "TOPE", "SANO", "HOENN" },
-  { "Lv10", "Lv25", "Lv50", "BERRY", "7DAYS", "BOND", "TOP", "FIT", "HOENN" },
-  { "Niv10", "Niv25", "Niv50", "BAIE", "7JRS", "LIEN", "MAX", "FORME", "HOENN" },
-  { "Lv10", "Lv25", "Lv50", "BEERE", "7TAGE", "BND", "END", "FIT", "HOENN" },
-  { "Lv10", "Lv25", "Lv50", "BACCA", "7GG", "LEG", "MAX", "FIT", "HOENN" },
-  { "Niv10", "Niv25", "Niv50", "BAGA", "7DIAS", "LACO", "MAX", "FIT", "HOENN" },
+  { "Nv10", "Nv25", "Nv50", "FAV", "7DIAS", "VINC", "TOPE", "SANO", "HOENN" },
+  { "Lv10", "Lv25", "Lv50", "FAV", "7DAYS", "BOND", "TOP", "FIT", "HOENN" },
+  { "Niv10", "Niv25", "Niv50", "FAV", "7JRS", "LIEN", "MAX", "FORME", "HOENN" },
+  { "Lv10", "Lv25", "Lv50", "FAV", "7TAGE", "BND", "END", "FIT", "HOENN" },
+  { "Lv10", "Lv25", "Lv50", "FAV", "7GG", "LEG", "MAX", "FIT", "HOENN" },
+  { "Niv10", "Niv25", "Niv50", "FAV", "7DIAS", "LACO", "MAX", "FIT", "HOENN" },
 };
 static const char *const MED_DSC[LANG_COUNT][MED_COUNT] = {
-  { "NIVEL 10", "NIVEL 25", "NIVEL 50", "BAYA HALLADA",
+  { "NIVEL 10", "NIVEL 25", "NIVEL 50", "FAV HALLADA",
     "RACHA 7 DIAS", "VINCULO MAX", "FORMA FINAL", "EN FORMA", "3 SELLOS HOENN" },
-  { "LEVEL 10", "LEVEL 25", "LEVEL 50", "BERRY FOUND",
+  { "LEVEL 10", "LEVEL 25", "LEVEL 50", "FAV FOOD FOUND",
     "7 DAY STREAK", "MAX BOND", "FINAL FORM", "IN SHAPE", "3 HOENN SEALS" },
-  { "NIVEAU 10", "NIVEAU 25", "NIVEAU 50", "BAIE TROUVEE",
+  { "NIVEAU 10", "NIVEAU 25", "NIVEAU 50", "PLAT TROUVE",
     "SERIE 7 JOURS", "LIEN MAX", "FORME FINALE", "EN FORME", "3 SCEAUX HOENN" },
-  { "LEVEL 10", "LEVEL 25", "LEVEL 50", "BEERE GEFUNDEN",
+  { "LEVEL 10", "LEVEL 25", "LEVEL 50", "ESSEN GEFUNDEN",
     "7 TAGE SERIE", "MAX BINDUNG", "ENDFORM", "FIT", "3 HOENN SIEGEL" },
-  { "LIVELLO 10", "LIVELLO 25", "LIVELLO 50", "BACCA TROVATA",
+  { "LIVELLO 10", "LIVELLO 25", "LIVELLO 50", "CIBO TROVATO",
     "SERIE 7 GIORNI", "LEGAME MAX", "FORMA FINALE", "IN FORMA", "3 SIGILLI HOENN" },
-  { "NIVEL 10", "NIVEL 25", "NIVEL 50", "BAGA ACHADA",
+  { "NIVEL 10", "NIVEL 25", "NIVEL 50", "COMIDA ACHADA",
     "SEQ 7 DIAS", "LACO MAX", "FORMA FINAL", "EM FORMA", "3 SELOS HOENN" },
 };
 

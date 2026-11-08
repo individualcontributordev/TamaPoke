@@ -132,7 +132,7 @@ assert(releaseScript.includes("SAVEGET\\n") && releaseScript.includes('SAVEPUT $
        'save backup must use explicit export and checked restore commands');
 assert(releaseScript.includes('Safety backup downloaded') && releaseScript.includes('Restore this backup?'),
        'restore must create a safety backup and require confirmation');
-assert(releaseHtml.includes('manifest-gen3.json?v=1.36.2-gentle'),
+assert(releaseHtml.includes('manifest-gen3.json?v=1.36.3-gentle'),
        'release preview must use the Gen-3 release manifest');
 assert.equal((releaseHtml.match(/id="full"/g) || []).length, 1,
              'release preview must expose exactly one sprite install button');
@@ -196,4 +196,4 @@ assert.equal(releaseResult.writerAborted, true);
 assert.equal(releaseResult.portClosed, true);
 assert.equal(releaseResult.disconnected, true);
 assert.equal(releaseResult.malformedRejected, true);
-console.log('Alle Web-Serial-Tests bestanden');
+console.log('All web-serial tests passed');

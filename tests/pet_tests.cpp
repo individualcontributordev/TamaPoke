@@ -313,7 +313,7 @@ static void testDailyGoalsProgressAndReset() {
   EXPECT_EQ(pet.dailyGoalType[2], DAILY_GOAL_CATCH);
   EXPECT_TRUE(!pet.dailyGoalComplete(0));
 
-  pet.feedCandy();
+  pet.feedMeat();
   EXPECT_EQ(pet.dailyGoalProgress[0], 1);
   EXPECT_TRUE(pet.dailyGoalComplete(0));
 
@@ -1279,6 +1279,6 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  std::cout << "Alle pet.cpp-Tests bestanden\n";
+  std::cout << "All pet.cpp tests passed\n";
   return EXIT_SUCCESS;
 }

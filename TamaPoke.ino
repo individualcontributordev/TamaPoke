@@ -39,7 +39,7 @@
 #ifdef TAMAPOKE_LOCAL_TEST
 #define FW_VERSION "1.36.2-hoenn-walk-local"
 #elif defined(TAMAPOKE_GEN3_RELEASE)
-#define FW_VERSION "1.36.2-gentle"
+#define FW_VERSION "1.36.3-gentle"
 #else
 #define FW_VERSION "1.35.3-soft-step"
 #endif
@@ -108,7 +108,6 @@ bool gameMenuDirty = true;
 bool battleDirty = true;
 bool starterDirty = true;
 
-int8_t watermarkDrawnSlot = -1;
 
 // escena de bano: espuma sobre el bicho y limpieza al reventar
 uint32_t bathUntil = 0;
@@ -205,8 +204,6 @@ uint8_t currentDayPhase();
 bool mainScreenReadyForShake();
 void maybeOfferMorning(uint32_t now);
 uint32_t pmdActTotalMs(const PmdAct &a);
-bool watermarkNeedsRedraw();
-void flushStampedFrame();
 void startBattleWith(int16_t forcedDex, uint8_t forcedLevel, int8_t forcedShiny = -1);
 void startBattle();
 
@@ -244,7 +241,7 @@ struct Btn {
   const char *const *icon;
 };
 Btn buttons[4] = {
-  { 140, 390, SPR_ICON_FOOD },   // comer
+  { 140, 390, SPR_ICON_BERRY },   // comer
   { 202, 404, SPR_ICON_PLAY },   // jugar
   { 264, 404, SPR_ICON_LIGHT },  // luz
   { 326, 390, SPR_ICON_CLEAN },  // bano
@@ -338,7 +335,6 @@ const char *screenName() {
 }
 
 bool staticScreenClean() {
-  if (watermarkNeedsRedraw()) return false;
   if (pet.awaitingStarter()) return !starterDirty;
   if (galleryOpen && !galleryDetail) return !galleryDirty;
   if (battleOpen && battleResolved) return !battleDirty;
@@ -1384,9 +1380,9 @@ void onTap(int16_t x, int16_t y) {
     return;
   }
   if (feedMenuUntil) {       // selector de comida
-    if (deadlineActive(millis(), feedMenuUntil) && y >= 288 && y <= 352 && x >= 101 && x <= 365) {
+    if (deadlineActive(millis(), feedMenuUntil) && y >= 276 && y <= 354 && x >= 101 && x <= 365) {
       int item = (x - 101) / 66;
-      if (item == 3) pet.feedCandy();
+      if (item == 3) pet.feedMeat();
       else pet.feedBerry(item);
       sfxPlay(SFX_EAT);
     }
@@ -1476,57 +1472,6 @@ uint16_t lerp565(uint16_t a, uint16_t b, int i, int n) {
   int br = (b >> 11) & 31, bg = (b >> 5) & 63, bb = b & 31;
   return (uint16_t)((((ar + (br - ar) * i / n) << 11)) |
                     (((ag + (bg - ag) * i / n) << 5)) | (ab + (bb - ab) * i / n));
-}
-
-static uint8_t watermarkSlot() {
-  return (uint8_t)((millis() / 20000UL) & 3U);
-}
-
-bool watermarkNeedsRedraw() {
-  return !screenOff && watermarkDrawnSlot != (int8_t)watermarkSlot();
-}
-
-static uint16_t watermarkPixel(uint16_t base) {
-  int r = ((base >> 11) & 31) * 255 / 31;
-  int g = ((base >> 5) & 63) * 255 / 63;
-  int b = (base & 31) * 255 / 31;
-  int luminance = (r * 30 + g * 59 + b * 11) / 100;
-  return lerp565(base, luminance > 145 ? 0x0000 : 0xFFFF, 1, 4);
-}
-
-static void drawWatermark(uint8_t slot) {
-  static const uint8_t GLYPHS[3][7] = {
-    { 0x0E, 0x11, 0x17, 0x15, 0x17, 0x10, 0x0E },  // @
-    { 0x1F, 0x10, 0x10, 0x0E, 0x01, 0x01, 0x1E },  // S
-    { 0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x1F },  // E
-  };
-  static const int16_t POS[4][2] = {
-    { 74, 74 }, { 374, 74 }, { 74, 384 }, { 374, 384 },
-  };
-  uint16_t *fb = gfx->getFramebuffer();
-  if (!fb) return;
-  int16_t ox = POS[slot][0];
-  int16_t oy = POS[slot][1];
-  for (uint8_t glyph = 0; glyph < 3; glyph++) {
-    for (uint8_t row = 0; row < 7; row++) {
-      uint8_t bits = GLYPHS[glyph][row];
-      for (uint8_t col = 0; col < 5; col++) {
-        if (!(bits & (1U << (4 - col)))) continue;
-        int16_t x = ox + glyph * 6 + col;
-        int16_t y = oy + row;
-        if (x < 0 || x >= LCD_WIDTH || y < 0 || y >= LCD_HEIGHT) continue;
-        uint32_t idx = (uint32_t)y * LCD_WIDTH + x;
-        fb[idx] = watermarkPixel(fb[idx]);
-      }
-    }
-  }
-}
-
-void flushStampedFrame() {
-  uint8_t slot = watermarkSlot();
-  drawWatermark(slot);
-  watermarkDrawnSlot = (int8_t)slot;
-  gfx->flush();
 }
 
 int sceneHour() {
@@ -1658,7 +1603,7 @@ void renderStarterRegionSelect() {
     gfx->setCursor(CX - strlen(label) * 9, ry + 24);
     gfx->print(label);
   }
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void renderStarterSelect() {
@@ -1683,20 +1628,10 @@ void renderStarterSelect() {
     gfx->setCursor(178, ry + 24);
     gfx->print(dexName(d));
   }
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void render() {
-  if (watermarkNeedsRedraw()) {
-    starterDirty = true;
-    cardDirty = true;
-    clockDirty = true;
-    helpDirty = true;
-    keyboardDirty = true;
-    gameMenuDirty = true;
-    battleDirty = true;
-    galleryDirty = true;
-  }
   if (staticScreenClean()) { perfRenderSkipCount++; return; }
   if (pet.awaitingStarter()) {  // primera partida: region y starter (prioridad total)
     if (starterRegion == 0xFF) renderStarterRegionSelect();
@@ -1748,7 +1683,7 @@ void render() {
                                                       : T(S_GOODBYE);
     drawHeader(dexName(pet.speciesId), d.accent, msg);
     drawCeremony();
-    flushStampedFrame();
+    gfx->flush();
     return;
   }
 
@@ -1831,12 +1766,18 @@ void render() {
     if (deadlineReached(millis(), feedMenuUntil)) {
       feedMenuUntil = 0;
     } else {
-      gfx->fillRoundRect(101, 288, 264, 64, 14, UI_WHITE);
-      gfx->drawRoundRect(101, 288, 264, 64, 14, inkColor());
-      drawMap(SPR_ICON_FOOD, 16, 110, 296, 3, false);
-      drawMap(SPR_ICON_BERRY_B, 16, 176, 296, 3, false);
-      drawMap(SPR_ICON_BERRY_G, 16, 242, 296, 3, false);
-      drawMap(SPR_ICON_CANDY, 16, 308, 296, 3, false);
+      gfx->fillRoundRect(101, 276, 264, 78, 14, UI_WHITE);
+      gfx->drawRoundRect(101, 276, 264, 78, 14, inkColor());
+      static const char *const *const FOOD_ICON[4] = { SPR_ICON_BERRY, SPR_ICON_BANANA, SPR_ICON_FISH, SPR_ICON_MEAT };
+      static const StrId FOOD_NAME[4] = { S_FOOD_BERRY, S_FOOD_BANANA, S_FOOD_FISH, S_FOOD_MEAT };
+      gfx->setTextColor(inkColor());
+      gfx->setTextSize(1);
+      for (int i = 0; i < 4; i++) {
+        drawMap(FOOD_ICON[i], 16, 110 + i * 66, 282, 3, false);
+        const char *name = T(FOOD_NAME[i]);
+        gfx->setCursor(134 + i * 66 - strlen(name) * 3, 338);
+        gfx->print(name);
+      }
     }
   }
 
@@ -1869,7 +1810,7 @@ void render() {
     else drawChoiceDialog();
   }
 
-  flushStampedFrame();
+  gfx->flush();
 }
 
 // ---------- minijuego: toques con la pokeball ----------
@@ -2333,7 +2274,7 @@ void renderSack() {
       gfx->setCursor(CX - strlen(r) * 6, 256);
       gfx->print(r);
     }
-    flushStampedFrame();
+    gfx->flush();
     return;
   }
 
@@ -2343,7 +2284,7 @@ void renderSack() {
     sackGain = pet.trainStrength(sackHits);
     sfxPlay(sackNewHi ? SFX_MEDAL : SFX_PLAY);
     sackOverUntil = now + 3500;
-    flushStampedFrame();
+    gfx->flush();
     return;
   }
 
@@ -2376,7 +2317,7 @@ void renderSack() {
   gfx->fillRoundRect(CX - bw / 2, 350, bw, 16, 5, UI_TRACK);
   if (fw > 2) gfx->fillRoundRect(CX - bw / 2, 350, fw, 16, 5, UI_BAR_OK);
 
-  flushStampedFrame();
+  gfx->flush();
 }
 
 // fondo del minijuego: hatibat del bicho (cielo por hora + suelo del bioma)
@@ -2431,7 +2372,7 @@ void drawGameResult(const char *recordFmt, uint16_t record, StrId gainFmt) {
     gfx->setCursor(CX - strlen(rec) * 6, 256);
     gfx->print(rec);
   }
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void renderCatchGame() {
@@ -2470,7 +2411,7 @@ void renderCatchGame() {
     if (i < 3 - gameMisses) gfx->fillCircle(180 + i * 28, 104, 6, UI_BAR_BAD);
     else gfx->drawCircle(180 + i * 28, 104, 6, UI_TRACK);
   }
-  const char *const *icon = catchIcon == 0 ? SPR_ICON_FOOD : (catchIcon == 1 ? SPR_ICON_BERRY_B : SPR_ICON_BERRY_G);
+  const char *const *icon = catchIcon == 0 ? SPR_ICON_BERRY : (catchIcon == 1 ? SPR_ICON_BANANA : SPR_ICON_FISH);
   gfx->fillCircle(catchX, catchY, 34, UI_WHITE);
   gfx->drawCircle(catchX, catchY, 36, UI_BAR_WARN);
   drawMap(icon, 16, catchX - 24, catchY - 24, 3, false);
@@ -2481,7 +2422,7 @@ void renderCatchGame() {
   if (fw > 2) gfx->fillRoundRect(CX - bw / 2, 362, fw, 16, 5, UI_BAR_OK);
   uint32_t ht = millis() - hitTime;
   if (hitTime && ht < 220) gfx->drawCircle((int)hitX, (int)hitY, 42 + ht / 8, UI_BAR_WARN);
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void stepMemoGame() {
@@ -2562,7 +2503,7 @@ void renderMemoGame() {
   gfx->setTextSize(2);
   gfx->setCursor(CX - (int)strlen(phase) * 6, 234);
   gfx->print(phase);
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void renderCleanGame() {
@@ -2612,7 +2553,7 @@ void renderCleanGame() {
   if (fw > 2) gfx->fillRoundRect(CX - bw / 2, 362, fw, 16, 5, UI_BAR_OK);
   uint32_t ht = millis() - hitTime;
   if (hitTime && ht < 220) gfx->drawCircle((int)hitX, (int)hitY, 42 + ht / 8, UI_BAR_OK);
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void renderTypeGame() {
@@ -2673,7 +2614,7 @@ void renderTypeGame() {
   if (fw < 0) fw = 0;
   gfx->fillRoundRect(CX - bw / 2, 392, bw, 14, 5, UI_TRACK);
   if (fw > 2) gfx->fillRoundRect(CX - bw / 2, 392, fw, 14, 5, UI_BAR_OK);
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void renderGame() {
@@ -2728,7 +2669,7 @@ void renderGame() {
     gfx->setTextColor(ink);
     gfx->setCursor(CX - strlen(msg) * 6, 250);
     gfx->print(msg);
-    flushStampedFrame();
+    gfx->flush();
     return;
   }
 
@@ -2782,7 +2723,7 @@ void renderGame() {
   // la pokeball
   drawMap(SPR_ICON_PLAY, 16, (int)ballX - 24, (int)ballY - 24, 3, false);
 
-  flushStampedFrame();
+  gfx->flush();
 }
 
 // ---------- combate salvaje manual ----------
@@ -3262,7 +3203,7 @@ void drawPetEvent() {
     gfx->fillCircle(ex, ey, 32, UI_WHITE);
     gfx->drawCircle(ex, ey, 34, UI_BAR_WARN);
     if (petEventType == PET_EVENT_BERRY) {
-      drawMap(SPR_ICON_BERRY_G, 16, ex - 24, ey - 24, 3, false);
+      drawMap(SPR_ICON_BERRY, 16, ex - 24, ey - 24, 3, false);
     } else if (petEventType == PET_EVENT_HEART) {
       drawMap(SPR_HEART, 32, ex - 32, ey - 32, 2, false);
     } else {
@@ -3431,7 +3372,7 @@ void renderBattle() {
     drawBattleButtonLabel(300, 380, 108, restLabel);
   }
 
-  flushStampedFrame();
+  gfx->flush();
 }
 
 // ---------- ficha del bicho (deslizar vertical) ----------
@@ -3542,7 +3483,7 @@ static const char *const HELP_TITLES[LANG_COUNT][HELP_PAGE_COUNT] = {
 
 static const char *const HELP_LINES[LANG_COUNT][HELP_PAGE_COUNT][HELP_LINE_COUNT] = {
   {
-    { "Comida baja = descuido.", "Jugar sube alegria.", "Bano limpia suciedad.", "Tocar da alegria/vinc.", "Peso alto te frena.", "Dulce alegra, engorda." },
+    { "Comida baja = descuido.", "Jugar sube alegria.", "Bano limpia suciedad.", "Tocar da alegria/vinc.", "Peso alto te frena.", "Carne alegra, engorda." },
     { "Dormir recupera energia.", "Durmiendo todo baja lento.", "Luz despierta o duerme.", "PWR corto apaga pantalla.", "Ahorro usa light sleep.", "Sin borrar conserva save." },
     { "Bola: toca la bola.", "Atrapa: toca iconos.", "Memo: repite secuencia.", "Limpia: toca manchas.", "Tipo: elige ventaja.", "Dan records y entreno." },
     { "Rapido: menos dano.", "Rival esquiva poco.", "Recibes algo menos dano.", "Fuerte: mas dano.", "Riesgo y contra mayor.", "No siempre conviene." },
@@ -3552,7 +3493,7 @@ static const char *const HELP_LINES[LANG_COUNT][HELP_PAGE_COUNT][HELP_LINE_COUNT
     { "Expedicion: 15/30/60 min.", "Cuesta energia al salir.", "El bicho sigue disponible.", "Buen cuidado mejora premio.", "Recoge 1 objeto al volver.", "Chip abre esta tarjeta." },
   },
   {
-    { "Low food = slip-up.", "Play raises joy.", "Bath cleans dirt.", "Petting gives joy/bond.", "High weight slows you.", "Candy cheers but fattens." },
+    { "Low food = slip-up.", "Play raises joy.", "Bath cleans dirt.", "Petting gives joy/bond.", "High weight slows you.", "Meat cheers but fattens." },
     { "Sleep restores energy.", "Needs decay slower asleep.", "Light toggles sleep.", "Short PWR screen off.", "Power Save light-sleeps.", "No erase keeps saves." },
     { "Ball: tap the ball.", "Catch: tap icons.", "Memo: repeat sequence.", "Clean: tap stains.", "Type: pick advantage.", "Records and training." },
     { "Quick: lower damage.", "Enemy dodges less.", "You take less damage.", "Heavy: more damage.", "More risk/counterplay.", "Not always best." },
@@ -3562,7 +3503,7 @@ static const char *const HELP_LINES[LANG_COUNT][HELP_PAGE_COUNT][HELP_LINE_COUNT
     { "Expedition: 15/30/60 min.", "Energy is spent at start.", "Pet stays available.", "Care and bond improve finds.", "Claim 1 item when back.", "Chip opens this card." },
   },
   {
-    { "Faim basse = erreur.", "Jouer monte la joie.", "Bain nettoie.", "Caresse donne lien/joie.", "Poids haut ralentit.", "Bonbon rend gros." },
+    { "Faim basse = erreur.", "Jouer monte la joie.", "Bain nettoie.", "Caresse donne lien/joie.", "Poids haut ralentit.", "Viande fait grossir." },
     { "Sommeil rend energie.", "Besoins baissent moins.", "Lumiere dort/reveille.", "PWR court eteint ecran.", "Eco utilise light sleep.", "Sans erase garde save." },
     { "Balle: touche la balle.", "Attrape: touche icones.", "Memo: repete sequence.", "Nettoie: touche taches.", "Type: choisis avantage.", "Records et entrainement." },
     { "Rapide: degats bas.", "Ennemi esquive moins.", "Tu subis moins.", "Fort: degats hauts.", "Risque plus grand.", "Pas toujours meilleur." },
@@ -3572,7 +3513,7 @@ static const char *const HELP_LINES[LANG_COUNT][HELP_PAGE_COUNT][HELP_LINE_COUNT
     { "Expedition: 15/30/60 min.", "Energie payee au depart.", "Le pet reste disponible.", "Soin/lien aide le butin.", "Prends 1 objet au retour.", "Chip ouvre cette carte." },
   },
   {
-    { "Food 0 = Patzer.", "Spielen hebt Freude.", "Bad reinigt Hygiene.", "Streicheln gibt Bond.", "Hohes Gewicht bremst.", "Candy freut, macht dick." },
+    { "Food 0 = Patzer.", "Spielen hebt Freude.", "Bad reinigt Hygiene.", "Streicheln gibt Bond.", "Hohes Gewicht bremst.", "Fleisch macht dick." },
     { "Schlaf gibt Energie.", "Needs sinken langsamer.", "Licht: schlafen/wach.", "PWR kurz: Screen aus.", "Sparen nutzt Light Sleep.", "Ohne Erase bleibt Save." },
     { "Ball: Ball antippen.", "Fangen: Icons treffen.", "Memo: Folge merken.", "Putzen: Flecken tippen.", "Typ: Vorteil waehlen.", "Gibt Rekorde/Training." },
     { "Schnell: weniger Schaden.", "Gegner weicht selten aus.", "Du kassierst weniger.", "Stark: mehr Schaden.", "Mehr Risiko/Gegendruck.", "Nicht immer beste Wahl." },
@@ -3582,7 +3523,7 @@ static const char *const HELP_LINES[LANG_COUNT][HELP_PAGE_COUNT][HELP_LINE_COUNT
     { "Expedition: 15/30/60 Min.", "Kostet beim Start Energie.", "Pet bleibt verfuegbar.", "Pflege/Bond verbessert Fund.", "Fund danach einsammeln.", "Chip oeffnet diese Karte." },
   },
   {
-    { "Cibo 0 = errore.", "Gioca aumenta gioia.", "Bagno pulisce.", "Carezza da legame.", "Peso alto rallenta.", "Dolce rallegra, ingrassa." },
+    { "Cibo 0 = errore.", "Gioca aumenta gioia.", "Bagno pulisce.", "Carezza da legame.", "Peso alto rallenta.", "Carne rallegra, ingrassa." },
     { "Sonno da energia.", "Bisogni calano meno.", "Luce dorme/sveglia.", "PWR corto spegne schermo.", "Risparmio usa light sleep.", "Senza erase salva." },
     { "Palla: tocca palla.", "Prendi: tocca icone.", "Memo: ripeti sequenza.", "Pulisci: tocca macchie.", "Tipo: scegli vantaggio.", "Record e allenamento." },
     { "Rapido: meno danni.", "Nemico schiva meno.", "Subisci meno danni.", "Forte: piu danni.", "Piu rischio.", "Non sempre migliore." },
@@ -3592,7 +3533,7 @@ static const char *const HELP_LINES[LANG_COUNT][HELP_PAGE_COUNT][HELP_LINE_COUNT
     { "Spedizione: 15/30/60 min.", "Energia spesa alla partenza.", "Il pet resta disponibile.", "Cura/legame migliora premio.", "Ritira 1 oggetto al ritorno.", "Chip apre questa carta." },
   },
   {
-    { "Comida 0 = falha.", "Jogar sobe alegria.", "Banho limpa.", "Carinho da vinculo.", "Peso alto atrasa.", "Doce alegra, engorda." },
+    { "Comida 0 = falha.", "Jogar sobe alegria.", "Banho limpa.", "Carinho da vinculo.", "Peso alto atrasa.", "Carne alegra, engorda." },
     { "Sono da energia.", "Necessidades caem menos.", "Luz dorme/acorda.", "PWR curto apaga tela.", "Poupanca usa light sleep.", "Sem erase guarda save." },
     { "Bola: toque na bola.", "Pegar: toque icones.", "Memo: repita sequencia.", "Limpa: toque manchas.", "Tipo: escolha vantagem.", "Recordes e treino." },
     { "Rapido: dano menor.", "Rival desvia menos.", "Voce recebe menos.", "Forte: dano maior.", "Mais risco.", "Nem sempre melhor." },
@@ -3655,7 +3596,7 @@ void renderHelp() {
     gfx->setCursor(360, 412);
     gfx->print(">>");
   }
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void openHelp() {
@@ -3776,7 +3717,7 @@ void renderClock() {
   gfx->setTextSize(3);
   gfx->setCursor(230 + (156 - 36) / 2, 414);
   gfx->print(T(S_OK));
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void clockTap(int16_t x, int16_t y) {
@@ -3977,10 +3918,10 @@ void renderCardProfile() {
 
   drawCardStat(258, T(S_VIN), pet.bond, 100, C565(0xd4, 0x52, 0x7e));
 
-  const char *berry = !pet.berryKnown ? T(S_BERRY_UNK)
-                      : pet.lovesBerry(0) ? T(S_BERRY_RED)
-                      : pet.lovesBerry(1) ? T(S_BERRY_BLUE)
-                                          : T(S_BERRY_GREEN);
+  const char *berry = !pet.berryKnown ? T(S_FAV_UNK)
+                      : pet.lovesBerry(0) ? T(S_FAV_BERRY)
+                      : pet.lovesBerry(1) ? T(S_FAV_BANANA)
+                                          : T(S_FAV_FISH);
   char info[40];
   snprintf(info, sizeof(info), T(S_INFO_FMT), berry,
            (unsigned long)(pet.ageMinutes / 1440));
@@ -4922,7 +4863,7 @@ void renderCard() {
   gfx->setTextSize(2);
   gfx->setCursor(CX - strlen(T(S_BACK)) * 6, 420);
   gfx->print(T(S_BACK));
-  flushStampedFrame();
+  gfx->flush();
 }
 
 // ---------- teclado para renombrar ----------
@@ -4974,7 +4915,7 @@ void renderKeyboard() {
       gfx->print(lab);
     }
   }
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void keyboardTap(int16_t x, int16_t y) {
@@ -5104,7 +5045,7 @@ void renderGallery() {
     gfx->setTextSize(2);
     gfx->setCursor(CX - strlen(T(S_DETAIL_BACK)) * 6, 408);
     gfx->print(T(S_DETAIL_BACK));
-    flushStampedFrame();
+    gfx->flush();
     return;
   }
 
@@ -5193,7 +5134,7 @@ void renderGallery() {
     if (i == galleryPage) gfx->fillCircle(dotX + i * 14, 436, 4, UI_INK);
     else gfx->drawCircle(dotX + i * 14, 436, 3, UI_INK);
   }
-  flushStampedFrame();
+  gfx->flush();
 }
 
 void galleryTap(int16_t x, int16_t y) {
@@ -5774,6 +5715,7 @@ void drawBar(int x, int y, const char *label, uint8_t val) {
   int bx = x + 48, bw = 100, bh = 15;  // +48: deja sitio a etiquetas de 4 letras (EN)
   uint16_t fill = (val >= 50) ? UI_BAR_OK : (val >= 25) ? UI_BAR_WARN : UI_BAR_BAD;
   gfx->fillRoundRect(bx, y, bw, bh, 4, UI_TRACK);
+  gfx->drawRoundRect(bx, y, bw, bh, 4, inkColor());
   int fw = (bw - 4) * val / 100;
   if (fw > 0) gfx->fillRoundRect(bx + 2, y + 2, fw, bh - 4, 3, fill);
 }
@@ -5784,6 +5726,13 @@ void drawButtons() {
     int bx = buttons[i].cx - BTN_HALF, by = buttons[i].cy - BTN_HALF;
     if (!pet.sleeping) gfx->fillRoundRect(bx, by, 2 * BTN_HALF, 2 * BTN_HALF, 14, UI_WHITE);
     gfx->drawRoundRect(bx, by, 2 * BTN_HALF, 2 * BTN_HALF, 14, inkColor());
+    // attention ring: the button that fixes a low need (eat, play, light, clean)
+    bool need = !pet.sleeping && (i == 0 ? pet.fullness < 25 : i == 1 ? pet.joy < 25 :
+                                  i == 2 ? pet.energy < 25 : (pet.hygiene < 25 || pet.poops > 0));
+    if (need) {
+      gfx->drawRoundRect(bx - 3, by - 3, 2 * BTN_HALF + 6, 2 * BTN_HALF + 6, 17, UI_BAR_BAD);
+      gfx->drawRoundRect(bx - 4, by - 4, 2 * BTN_HALF + 8, 2 * BTN_HALF + 8, 18, UI_BAR_BAD);
+    }
     if (!off) drawMap(buttons[i].icon, 16, buttons[i].cx - 16, buttons[i].cy - 16, 2, false);
   }
 }

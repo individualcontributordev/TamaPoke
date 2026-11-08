@@ -39,7 +39,7 @@
 #ifdef TAMAPOKE_LOCAL_TEST
 #define FW_VERSION "1.36.2-hoenn-walk-local"
 #elif defined(TAMAPOKE_GEN3_RELEASE)
-#define FW_VERSION "1.36.3-gentle"
+#define FW_VERSION "1.36.4-gentle"
 #else
 #define FW_VERSION "1.35.3-soft-step"
 #endif
@@ -213,11 +213,7 @@ int flashIdxForDex(int16_t dex) {
   return (dex >= 1 && dex <= 9) ? IDX[dex] : -1;
 }
 
-#define CX 233  // centro de la pantalla redonda
-#define CY 233
-#define PET_CY 202  // centro vertical del sprite
-
-static const uint16_t INK_K = 0x18C4;  // spriteColor('k')
+#include "ui_home.h"  // scene, header, HUD, gauges, feed menu
 
 void loadPowerSave() {
   Preferences p;
@@ -234,26 +230,9 @@ void setPowerSave(bool on) {
   p.end();
 }
 
-// botones de icono siguiendo el arco inferior de la pantalla redonda
-// (los exteriores van mas altos para no salirse del circulo)
-struct Btn {
-  int16_t cx, cy;
-  const char *const *icon;
-};
-Btn buttons[4] = {
-  { 140, 390, SPR_ICON_BERRY },   // comer
-  { 202, 404, SPR_ICON_PLAY },   // jugar
-  { 264, 404, SPR_ICON_LIGHT },  // luz
-  { 326, 390, SPR_ICON_CLEAN },  // bano
-};
-#define BTN_HALF 26  // boton de 52x52
-#define BTN_HIT 36   // radio tactil (un poco mas generoso)
-
 // grietas del huevo (pixeles 'k' sobre el sprite)
 static const uint8_t CRACK1[][2] = { {15,8},{16,9},{15,10} };
 static const uint8_t CRACK2[][2] = { {11,13},{12,14},{11,15},{20,12},{19,13},{20,14} };
-// estrellas del modo noche
-static const uint16_t STARS[][2] = { {120,140},{330,120},{370,210},{95,230},{280,90},{160,95} };
 
 bool wasPressed = false;
 // eleccion de inicial (primera partida): primero region, despues 3 starters.
@@ -1380,8 +1359,8 @@ void onTap(int16_t x, int16_t y) {
     return;
   }
   if (feedMenuUntil) {       // selector de comida
-    if (deadlineActive(millis(), feedMenuUntil) && y >= 276 && y <= 354 && x >= 101 && x <= 365) {
-      int item = (x - 101) / 66;
+    int item = feedItemAt(x, y);
+    if (deadlineActive(millis(), feedMenuUntil) && item >= 0) {
       if (item == 3) pet.feedMeat();
       else pet.feedBerry(item);
       sfxPlay(SFX_EAT);
@@ -1458,26 +1437,6 @@ void onTap(int16_t x, int16_t y) {
 
 // ---------- render ----------
 
-bool gNight = false;  // noche real (por hora) o durmiendo: lo fija render()
-uint16_t inkColor() { return gNight ? UI_INK_NIGHT : UI_INK; }
-
-// ---------- escena de fondo: bioma del tipo + hora real del RTC ----------
-
-#define C565(r, g, b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
-#define HORIZON 232  // linea donde el cielo se encuentra con el suelo
-
-uint16_t lerp565(uint16_t a, uint16_t b, int i, int n) {
-  if (n <= 0) return a;
-  int ar = (a >> 11) & 31, ag = (a >> 5) & 63, ab = a & 31;
-  int br = (b >> 11) & 31, bg = (b >> 5) & 63, bb = b & 31;
-  return (uint16_t)((((ar + (br - ar) * i / n) << 11)) |
-                    (((ag + (bg - ag) * i / n) << 5)) | (ab + (bb - ab) * i / n));
-}
-
-int sceneHour() {
-  return sceneHourFromEpoch(pet.lastSeenEpoch);
-}
-
 uint8_t currentDayPhase() {
   return dayPhaseFromHour(sceneHour());
 }
@@ -1488,98 +1447,6 @@ StrId dayPhaseTextId(uint8_t phase) {
     case 2: return S_EVENING;
     case 3: return S_NIGHT;
     default: return S_DAY;
-  }
-}
-
-// suelo de cada bioma de dia (de noche se mezcla hacia el azul nocturno)
-static const uint16_t BIOME_SOIL[6] = {
-  C565(0x7e, 0xc0, 0x7f),  // 0 pradera
-  C565(0xdc, 0xca, 0x94),  // 1 playa (arena)
-  C565(0x4f, 0x8a, 0x55),  // 2 bosque
-  C565(0x8a, 0x55, 0x44),  // 3 volcan
-  C565(0xa8, 0x90, 0x6a),  // 4 montana
-  C565(0xe6, 0xee, 0xf5),  // 5 nieve
-};
-
-void drawClouds(uint32_t now, uint16_t col) {
-  for (int k = 0; k < 2; k++) {
-    int cx = (int)((now / 50 + k * 250) % 560) - 40;
-    int cy = 70 + k * 34;
-    gfx->fillCircle(cx, cy, 16, col);
-    gfx->fillCircle(cx + 18, cy + 3, 13, col);
-    gfx->fillCircle(cx - 15, cy + 4, 12, col);
-  }
-}
-
-void drawScene(uint8_t biome, uint32_t now, bool night) {
-  int h = sceneHour();
-  uint16_t top, bot;
-  if (night)            { top = C565(0x0c, 0x12, 0x24); bot = C565(0x1e, 0x26, 0x46); }
-  else if (h < 8)       { top = C565(0xd1, 0x6a, 0x86); bot = C565(0xf3, 0xb8, 0x7c); }  // amanecer
-  else if (h < 18)      { top = C565(0x8f, 0xc8, 0xea); bot = C565(0xdc, 0xee, 0xe6); }  // dia
-  else                  { top = C565(0xc7, 0x5a, 0x4a); bot = C565(0xf0, 0xae, 0x64); }  // atardecer
-
-  // cielo en bandas
-  for (int y = 0; y < HORIZON; y += 8)
-    gfx->fillRect(0, y, 466, 8, lerp565(top, bot, y, HORIZON));
-
-  // sol o luna
-  if (night) {
-    gfx->fillCircle(360, 78, 24, C565(0xe8, 0xee, 0xf5));
-    gfx->fillCircle(370, 72, 22, lerp565(top, bot, 78, HORIZON));  // creciente
-    for (auto &st : STARS) gfx->fillRect(st[0], st[1], 4, 4, UI_WHITE);
-  } else if (h < 18) {
-    gfx->fillCircle(360, 84, 26, h < 8 ? C565(0xff, 0xd9, 0x8a) : C565(0xff, 0xe7, 0x9f));
-    drawClouds(now, C565(0xff, 0xff, 0xff));
-  } else {
-    gfx->fillCircle(233, HORIZON - 6, 34, C565(0xff, 0xf1, 0xc8));  // sol poniente
-  }
-
-  // mar de la playa: una franja de agua sobre la arena
-  uint16_t soil = BIOME_SOIL[biome < 6 ? biome : 0];
-  if (night) soil = lerp565(soil, C565(0x16, 0x1c, 0x30), 9, 16);
-  if (biome == 1) {
-    uint16_t sea = night ? C565(0x1c, 0x34, 0x52) : C565(0x4f, 0x96, 0xc4);
-    gfx->fillRect(0, HORIZON - 26, 466, 26, sea);
-    for (int i = 0; i < 3; i++) {
-      int wy = HORIZON - 22 + i * 7;
-      uint16_t fc = night ? C565(0x3a, 0x58, 0x78) : C565(0xbf, 0xe6, 0xf5);
-      gfx->fillRect(60 + ((now / 60 + i * 30) % 60), wy, 26, 2, fc);
-      gfx->fillRect(300 - ((now / 60 + i * 20) % 60), wy, 26, 2, fc);
-    }
-  }
-
-  // suelo
-  gfx->fillRect(0, HORIZON, 466, 466 - HORIZON, soil);
-  uint16_t hill = lerp565(soil, night ? C565(0x0c, 0x12, 0x24) : C565(0xff, 0xff, 0xff), 3, 16);
-  gfx->fillRoundRect(-60, HORIZON - 14, 586, 60, 30, hill);
-
-  // detalles del bioma
-  uint16_t dk = lerp565(soil, C565(0x10, 0x18, 0x20), night ? 11 : 7, 16);
-  if (biome == 2) {  // bosque: coniferas en silueta
-    for (int tx : { 60, 150, 360, 416 }) {
-      gfx->fillTriangle(tx, HORIZON - 46, tx - 16, HORIZON, tx + 16, HORIZON, dk);
-      gfx->fillTriangle(tx, HORIZON - 60, tx - 12, HORIZON - 28, tx + 12, HORIZON - 28, dk);
-    }
-  } else if (biome == 3) {  // volcan: rocas y brasas
-    gfx->fillTriangle(70, HORIZON, 40, HORIZON + 30, 100, HORIZON + 30, dk);
-    gfx->fillTriangle(400, HORIZON + 4, 372, HORIZON + 30, 430, HORIZON + 30, dk);
-    if (!night)
-      for (int e = 0; e < 4; e++)
-        gfx->fillRect(120 + e * 70, HORIZON + 8 + (e % 2) * 6, 4, 4, C565(0xff, 0x9b, 0x3a));
-  } else if (biome == 4) {  // montana: cumbres al fondo
-    gfx->fillTriangle(140, HORIZON - 50, 60, HORIZON, 220, HORIZON, dk);
-    gfx->fillTriangle(330, HORIZON - 38, 250, HORIZON, 410, HORIZON, dk);
-  } else if (biome == 5 && !night) {  // nieve: copos cayendo
-    for (int f = 0; f < 10; f++) {
-      int fx = (f * 53 + now / 40) % 466;
-      int fy = (f * 90 + now / 18) % HORIZON;
-      gfx->fillRect(fx, fy, 3, 3, UI_WHITE);
-    }
-  } else if (biome == 0) {  // pradera: matas de hierba
-    for (int gx : { 80, 175, 300, 395 })
-      for (int b = -1; b <= 1; b++)
-        gfx->fillRect(gx + b * 5, HORIZON + 6, 2, 8 + (b == 0 ? 4 : 0), dk);
   }
 }
 
@@ -1688,7 +1555,7 @@ void render() {
   }
 
   if (pet.isEgg()) {
-    drawHeader(T(S_EGG_HDR), inkColor(), eggMsg());
+    drawHeader(T(S_EGG_HDR), UI_BAR_WARN, eggMsg());
     int s = 5, x = CX - 16 * s, y = PET_CY - 16 * s;
     if (deadlineActive(millis(), eggWiggleUntil))
       x += ((millis() / 40) % 2) ? 6 : -6;
@@ -1706,27 +1573,22 @@ void render() {
     }
     char reg[24];
     snprintf(reg, sizeof(reg), T(S_POKEDEX_FMT), pet.registeredCount(), DEX_COUNT);
-    gfx->fillRect(0, 312, 466, 154, gNight ? UI_BG_NIGHT : UI_BG_DAY);
-    gfx->setTextColor(inkColor());
-    gfx->setTextSize(2);
-    gfx->setCursor(CX - strlen(reg) * 6, 348);
-    gfx->print(reg);
+    drawEggDock(reg);
+    drawStreakBadge();
     drawStepsHud();
   } else {
     const DexEntry &d = DEX_TBL[pet.speciesId];
     char name[28];
     const char *base = pet.nick[0] ? pet.nick : dexName(pet.speciesId);
     snprintf(name, sizeof(name), T(S_NAME_FMT), pet.shiny ? "*" : "", base, pet.level());
-    drawHeader(name, gNight ? UI_INK_NIGHT : d.accent, statusMsg());
+    drawHeader(name, d.accent, statusMsg());
     drawStreakBadge();
     drawStepsHud();
     drawPet();
     drawBath();
     drawPoops();
     drawExpeditionHud();
-    // panel inferior: base limpia para barras y botones sobre el paisaje
-    gfx->fillRect(0, 312, 466, 154, gNight ? UI_BG_NIGHT : UI_BG_DAY);
-    drawBars();
+    drawDock();  // bottom panel: clean base for the buttons over the scene
     drawButtons();
     drawCelebration();
     drawPetEvent();
@@ -1736,12 +1598,7 @@ void render() {
     else if (pet.wantFarewellButton()) drawFarewellButton();  // CTA dorado: despedida
   }
 
-  if (pet.sleeping) {
-    gfx->setTextColor(UI_INK_NIGHT);
-    gfx->setTextSize(3);
-    gfx->setCursor(320, 130);
-    gfx->print("Zz");
-  }
+  if (pet.sleeping) drawSleepZ(millis());
 
   if (morningUntil) {
     if (deadlineReached(millis(), morningUntil)) morningUntil = 0;
@@ -1766,18 +1623,7 @@ void render() {
     if (deadlineReached(millis(), feedMenuUntil)) {
       feedMenuUntil = 0;
     } else {
-      gfx->fillRoundRect(101, 276, 264, 78, 14, UI_WHITE);
-      gfx->drawRoundRect(101, 276, 264, 78, 14, inkColor());
-      static const char *const *const FOOD_ICON[4] = { SPR_ICON_BERRY, SPR_ICON_BANANA, SPR_ICON_FISH, SPR_ICON_MEAT };
-      static const StrId FOOD_NAME[4] = { S_FOOD_BERRY, S_FOOD_BANANA, S_FOOD_FISH, S_FOOD_MEAT };
-      gfx->setTextColor(inkColor());
-      gfx->setTextSize(1);
-      for (int i = 0; i < 4; i++) {
-        drawMap(FOOD_ICON[i], 16, 110 + i * 66, 282, 3, false);
-        const char *name = T(FOOD_NAME[i]);
-        gfx->setCursor(134 + i * 66 - strlen(name) * 3, 338);
-        gfx->print(name);
-      }
+      drawFeedMenu();
     }
   }
 
@@ -3753,20 +3599,6 @@ void clockTap(int16_t x, int16_t y) {
   if (y >= 404 && y <= 444 && x >= 230 && x <= 386) { applyClock(); return; }
 }
 
-// llama + numero de racha arriba a la izquierda
-void drawStreakBadge() {
-  if (pet.streak < 1) return;
-  int x = 26, y = 16;
-  gfx->fillTriangle(x + 8, y, x + 1, y + 17, x + 15, y + 17, UI_BAR_BAD);
-  gfx->fillTriangle(x + 8, y + 7, x + 4, y + 17, x + 12, y + 17, UI_BAR_WARN);
-  char s[6];
-  snprintf(s, sizeof(s), "%u", pet.streak);
-  gfx->setTextColor(inkColor());
-  gfx->setTextSize(2);
-  gfx->setCursor(x + 22, y + 2);
-  gfx->print(s);
-}
-
 // banner temporal: medalla nueva o hito de racha
 void drawCelebration() {
   const char *l1 = nullptr, *l2 = nullptr;
@@ -4502,17 +4334,9 @@ uint32_t expeditionNowEpoch() {
 }
 
 static const int EXP_HUD_X = 310;
-static const int EXP_HUD_Y = 106;
+static const int EXP_HUD_Y = 118;  // below the status pill (y 90..112)
 static const int EXP_HUD_W = 112;
 static const int EXP_HUD_H = 34;
-
-// The top edge of the round display is not visible at the corners. The
-// step chip therefore sits left above the name, inside the circle;
-// the expedition hint stays free on the right.
-static const int STEP_HUD_X = 130;
-static const int STEP_HUD_Y = 24;
-static const int STEP_HUD_W = 126;
-static const int STEP_HUD_H = 22;
 
 bool inStepsHudHit(int16_t x, int16_t y) {
   return x >= STEP_HUD_X && x <= STEP_HUD_X + STEP_HUD_W &&
@@ -4526,19 +4350,6 @@ void openStepsCard() {
   cardDirty = true;
   lockTouchBrief();
   sfxPlay(SFX_MENU);
-}
-
-void drawStepsHud() {
-  uint16_t color = pet.stepsToday >= 5000UL ? UI_BAR_WARN :
-                   pet.stepsToday >= 500UL ? UI_BAR_OK : UI_TRACK;
-  char label[24];
-  snprintf(label, sizeof(label), "%s %lu", T(S_STEPS), (unsigned long)pet.stepsToday);
-  gfx->fillRoundRect(STEP_HUD_X, STEP_HUD_Y, STEP_HUD_W, STEP_HUD_H, 8, UI_WHITE);
-  gfx->drawRoundRect(STEP_HUD_X, STEP_HUD_Y, STEP_HUD_W, STEP_HUD_H, 8, color);
-  gfx->setTextColor(UI_INK);
-  gfx->setTextSize(1);
-  gfx->setCursor(STEP_HUD_X + (STEP_HUD_W - (int)strlen(label) * 6) / 2, STEP_HUD_Y + 10);
-  gfx->print(label);
 }
 
 bool expeditionHudVisible() {
@@ -5175,41 +4986,6 @@ void galleryTap(int16_t x, int16_t y) {
   if (pet.isRegistered(dex) || pet.isCaught(dex)) speciesChirpPlay(dex);
 }
 
-void drawBattery() {
-  int pc = batPercent();
-  if (pc < 0) return;  // sin bateria conectada
-  int x = CX - 14, y = 12, w = 24, h = 11;
-  bool charging = batCharging();
-  uint16_t col = charging ? UI_BAR_OK
-                 : (pc >= 40) ? inkColor()
-                 : (pc >= 15) ? UI_BAR_WARN
-                              : UI_BAR_BAD;
-  gfx->drawRoundRect(x, y, w, h, 2, col);
-  gfx->fillRect(x + w, y + 3, 3, 5, col);  // borne
-  if (charging) {
-    // rayo de carga (zigzag) en vez de la barra de nivel
-    uint16_t bolt = C565(0xff, 0xd9, 0x4a);
-    int bx = x + w / 2;
-    gfx->fillTriangle(bx + 3, y + 1, bx - 4, y + 6, bx + 1, y + 6, bolt);
-    gfx->fillTriangle(bx - 1, y + 5, bx + 4, y + 5, bx - 3, y + 10, bolt);
-  } else {
-    int fw = (w - 4) * pc / 100;
-    if (fw > 0) gfx->fillRect(x + 2, y + 2, fw, h - 4, col);
-  }
-}
-
-void drawHeader(const char *name, uint16_t nameColor, const char *msg) {
-  drawBattery();
-  gfx->setTextColor(nameColor);
-  gfx->setTextSize(3);
-  gfx->setCursor(CX - strlen(name) * 9, 52);
-  gfx->print(name);
-  gfx->setTextColor(inkColor());
-  gfx->setTextSize(2);
-  gfx->setCursor(CX - strlen(msg) * 6, 90);
-  gfx->print(msg);
-}
-
 // animacion de la ceremonia (10s): despedida = reverencia con corazones y se
 // aleja caminando; escapada = se asusta y sale corriendo. Sustituye al idle.
 void drawCeremony() {
@@ -5448,6 +5224,7 @@ void drawPet() {
     return;
   }
 
+  drawPetShadow(CX, y + 30 * s, 12 * s);
   PetMood m = pet.mood();
   if (m == MOOD_HAPPY && (millis() / 500) % 2) y -= 6;  // saltito
 
@@ -5640,6 +5417,7 @@ void drawPetPMD() {
     if (!pmd.has(act)) act = PMD_IDLE;
   }
 
+  drawPetShadow((int)beh.x, PET_GROUND - 3, 56);
   drawPmdAct(act, (int)beh.x, PET_GROUND, now - beh.t0, loop || act == PMD_IDLE, false, 5);
 
   if (pet.showHeart()) drawMap(SPR_HEART, 32, (int)beh.x + 50, PET_GROUND - 190, 2, false);
@@ -5651,6 +5429,7 @@ void drawPetSD() {
   int w = mon.w * s, h = mon.h * s;
   int x = CX - w / 2;
   int y = PET_CY - h / 2;
+  drawPetShadow(CX, y + h - 3, w / 3);
 
   bool sil = false;
   if (pet.evolving()) {
@@ -5694,49 +5473,6 @@ void overlayMouth(const Species &sp, int x, int y, int s, bool open) {
   }
 }
 
-void drawPoops() {
-  for (int i = 0; i < pet.poops; i++) {
-    drawMap(SPR_POOP, 32, 36 + i * 46, 244, 2, false);
-  }
-}
-
-void drawBars() {
-  drawBar(78, 318, T(S_BAR_FOOD), pet.fullness);
-  drawBar(244, 318, T(S_BAR_JOY), pet.joy);
-  drawBar(78, 346, T(S_BAR_ENE), pet.energy);
-  drawBar(244, 346, T(S_BAR_HYG), pet.hygiene);
-}
-
-void drawBar(int x, int y, const char *label, uint8_t val) {
-  gfx->setTextColor(inkColor());
-  gfx->setTextSize(2);
-  gfx->setCursor(x, y);
-  gfx->print(label);
-  int bx = x + 48, bw = 100, bh = 15;  // +48: deja sitio a etiquetas de 4 letras (EN)
-  uint16_t fill = (val >= 50) ? UI_BAR_OK : (val >= 25) ? UI_BAR_WARN : UI_BAR_BAD;
-  gfx->fillRoundRect(bx, y, bw, bh, 4, UI_TRACK);
-  gfx->drawRoundRect(bx, y, bw, bh, 4, inkColor());
-  int fw = (bw - 4) * val / 100;
-  if (fw > 0) gfx->fillRoundRect(bx + 2, y + 2, fw, bh - 4, 3, fill);
-}
-
-void drawButtons() {
-  for (int i = 0; i < 4; i++) {
-    bool off = pet.sleeping && i != 2;  // durmiendo solo funciona LUZ
-    int bx = buttons[i].cx - BTN_HALF, by = buttons[i].cy - BTN_HALF;
-    if (!pet.sleeping) gfx->fillRoundRect(bx, by, 2 * BTN_HALF, 2 * BTN_HALF, 14, UI_WHITE);
-    gfx->drawRoundRect(bx, by, 2 * BTN_HALF, 2 * BTN_HALF, 14, inkColor());
-    // attention ring: the button that fixes a low need (eat, play, light, clean)
-    bool need = !pet.sleeping && (i == 0 ? pet.fullness < 25 : i == 1 ? pet.joy < 25 :
-                                  i == 2 ? pet.energy < 25 : (pet.hygiene < 25 || pet.poops > 0));
-    if (need) {
-      gfx->drawRoundRect(bx - 3, by - 3, 2 * BTN_HALF + 6, 2 * BTN_HALF + 6, 17, UI_BAR_BAD);
-      gfx->drawRoundRect(bx - 4, by - 4, 2 * BTN_HALF + 8, 2 * BTN_HALF + 8, 18, UI_BAR_BAD);
-    }
-    if (!off) drawMap(buttons[i].icon, 16, buttons[i].cx - 16, buttons[i].cy - 16, 2, false);
-  }
-}
-
 const char *eggMsg() {
   switch (pet.eggCracks()) {
     case 0: return T(S_EGG_TOUCH);
@@ -5758,15 +5494,4 @@ const char *statusMsg() {
   if (pet.weight > 60) return T(S_CHUBBY);
   if (pet.shiny && pet.ageMinutes < 15) return T(S_IS_SHINY);
   return T(S_HAPPY);
-}
-
-// dibuja un mapa de n x n pixeles escalado; silhouette=true lo pinta en tinta
-void drawMap(const char *const *map, int n, int x, int y, int s, bool silhouette) {
-  for (int r = 0; r < n; r++) {
-    for (int c = 0; c < n; c++) {
-      char ch = map[r][c];
-      if (ch == '.') continue;
-      gfx->fillRect(x + c * s, y + r * s, s, s, silhouette ? INK_K : spriteColor(ch));
-    }
-  }
 }

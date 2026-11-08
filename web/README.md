@@ -6,7 +6,7 @@
 
 <https://individualcontributor.dev/TamaPoke/>
 
-`index.html` and `manifest.json` serve firmware `1.36.3-gentle` with Pokémon
+`index.html` and `manifest.json` serve firmware `1.36.4-gentle` with Pokémon
 #1–386. They expose no debug controls. Step 2 (sprites) is needed only for a new
 or empty microSD; a firmware update keeps the save with **Erase device** off.
 

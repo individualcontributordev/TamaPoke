@@ -3,7 +3,7 @@
 [![Flash in browser](https://img.shields.io/badge/flash-in%20browser-2F9D8A?logo=googlechrome&logoColor=white)](https://individualcontributor.dev/TamaPoke/)
 [![MakerWorld](https://img.shields.io/badge/MakerWorld-3D%20case-00AE42?logo=bambulab&logoColor=white)](https://makerworld.com/es/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi)
 ![Board](https://img.shields.io/badge/board-ESP32--S3%20round%20AMOLED-E7352C?logo=espressif&logoColor=white)
-![Firmware](https://img.shields.io/badge/firmware-v1.36.3--gentle-2F9D8A)
+![Firmware](https://img.shields.io/badge/firmware-v1.36.4--gentle-2F9D8A)
 ![Pokédex](https://img.shields.io/badge/Pok%C3%A9mon-386-E8503A)
 ![Languages](https://img.shields.io/badge/languages-6-FFCB05)
 
@@ -19,7 +19,22 @@ made for small trainers.
 - **Four foods with new icons:** Berry, Banana, Fish and Meat, each labelled in
   the feed menu. Each Pokémon secretly loves one of the first three. Meat fills
   most but adds weight.
-- Buttons ring in red when their need is low (eat, play, light, clean).
+- **Redesigned home screen:** a layered scene (sky gradient, sun or moon with
+  stars, hills, a ground shadow under the Pokémon), name and mood pills at the
+  top, steps and streak chips, and a bottom dock of four ring-gauge buttons.
+  Each ring is that need (eat, play, light, clean). It fills while the need is
+  high and turns orange, then pulses red with a "!" when it is low, so a child
+  can see what to do without reading.
+
+![Home screen by day, dusk, night and asleep](docs/home-screens.png)
+
+![Low needs show a red pulsing ring; tapping eat opens the feed menu](docs/feed-menu.png)
+
+![The four foods: Berry, Banana, Fish and Meat](docs/food-icons.png)
+
+<sub>Images are rendered on a PC from the firmware's own drawing code (`ui_home.h`)
+with the real Wartortle sprite from the sprite pack (first Idle/Sleep frame, no
+animation). They are not photos of the device.</sub>
 
 ## Install
 
@@ -93,7 +108,7 @@ the separate `1.75C` is a different board.
 
 ## Developer builds
 
-Release `1.36.3-gentle` includes the Hoenn expedition sites and the optional
+Release `1.36.4-gentle` includes the Hoenn expedition sites and the optional
 250/500/1,000-step tour goals. The local debug build is
 `1.36.2-hoenn-walk-local`; see [local test notes](HOENN_WALK_LOCAL.md).
 

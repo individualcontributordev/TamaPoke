@@ -16,6 +16,9 @@
 #define CEREMONY_MS 10000UL                // duracion de la despedida en pantalla
 #define FAREWELL_AGE_MIN (3UL * 24 * 60)   // se despide a los 3 dias de juego (en forma final)
 #define RUNAWAY_TICKS 60                   // se escapa tras 1 h con TODO a cero
+// Ritmo relajado (crias pequenos): las necesidades bajan 1 vez cada CARE_SLOW min
+// (~6 h de comida llena a "tengo hambre"). 1 = ritmo original (~1,5 h).
+#define CARE_SLOW 12
 
 // ceremonias de fin de ciclo
 enum : uint8_t { CER_NONE = 0, CER_FAREWELL, CER_RUNAWAY, CER_RELEASE };

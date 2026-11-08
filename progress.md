@@ -1,8 +1,14 @@
 # TamaPoke development progress
 
-Stand: 2026-11-05
+Stand: 2026-11-08
 
 ## Current state
+
+- **TamaPoke Gentle `1.36.2-gentle`** (fork `individualcontributordev/TamaPoke`):
+  the Pokémon can never leave (`canFarewellNow`/`canRunawayNow` return false, no
+  long-press release dialog) and needs decay once per `CARE_SLOW` = 12 game
+  minutes (~6 h between cares). Installer is built and published by
+  `.github/workflows/pages.yml`; firmware binaries are no longer committed.
 
 - Active branch: `local/full-gen3`; rollback tag: `local-before-gen3`.
 - The tested Gen‑3 feature commit `da8bfa8` is already on `fork/main`.

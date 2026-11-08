@@ -508,7 +508,7 @@ static void testNewPetResetsInteractionAndDecisionDeferrals() {
   pet.eggTap();
   pet.eggTap();
   pet.ageMinutes = FAREWELL_AGE_MIN;
-  EXPECT_TRUE(pet.wantFarewellButton());
+  EXPECT_TRUE(!pet.wantFarewellButton());  // la despedida esta desactivada
 }
 
 static void testLevelCapsAtOneHundred() {
@@ -592,18 +592,26 @@ static void testCareBonusCapsStreakContribution() {
   EXPECT_EQ(pet.careBonus(), 14);
 }
 
-static void testFarewellAndRunawayReadiness() {
+static void testPetNeverLeaves() {
   Pet pet = hatchedPet(6);
   pet.ageMinutes = FAREWELL_AGE_MIN;
-
-  EXPECT_TRUE(pet.canFarewellNow());
-
-  pet.sleeping = true;
   EXPECT_TRUE(!pet.canFarewellNow());
 
-  pet.sleeping = false;
   pet.dbgRunawayReady();
-  EXPECT_TRUE(pet.canRunawayNow());
+  EXPECT_TRUE(!pet.canRunawayNow());
+}
+
+static void testNeedsDecaySlowly() {
+  Pet pet = hatchedPet(4);
+  pet.fullness = pet.joy = pet.energy = pet.hygiene = 100;
+  gMockMillis = 0;
+  pet.update(gMockMillis);  // fija lastTick
+  gMockMillis += 5UL * 60 * PET_TICK_MS;  // 5 h de juego
+  pet.update(gMockMillis);
+
+  EXPECT_TRUE(pet.fullness >= 50);
+  EXPECT_TRUE(pet.energy >= 50);
+  EXPECT_TRUE(pet.ceremony == CER_NONE);
 }
 
 static void testBattleRewardsAndProgression() {
@@ -827,6 +835,7 @@ static void testNightHungerDropsSlowerWhenAwake() {
   Pet dayPet = hatchedPet(4);
   dayPet.fullness = 80;
   dayPet.sleeping = false;
+  dayPet.ageMinutes = CARE_SLOW - 1;  // el tick cae en un tick de cuidado
   dayPet.lastSeenEpoch = kNoonEpoch;
   gMockMillis = 0;
   EXPECT_TRUE(dayPet.update(PET_TICK_MS));
@@ -835,6 +844,7 @@ static void testNightHungerDropsSlowerWhenAwake() {
   Pet nightPet = hatchedPet(4);
   nightPet.fullness = 80;
   nightPet.sleeping = false;
+  nightPet.ageMinutes = CARE_SLOW - 1;  // el tick cae en un tick de cuidado
   nightPet.lastSeenEpoch = kNightEpoch;
   gMockMillis = 0;
   EXPECT_TRUE(nightPet.update(PET_TICK_MS));
@@ -847,14 +857,16 @@ static void testOfflineNightHungerUsesHourOfEachMinute() {
   pet.setClock(kNightEpoch);
   pet.fullness = 80;
   pet.sleeping = false;
-  pet.syncClock(kNightEpoch + 5UL * 60UL);
+  pet.ageMinutes = 0;
+  pet.syncClock(kNightEpoch + 5UL * CARE_SLOW * 60UL);  // 5 ticks de cuidado
   EXPECT_EQ(pet.fullness, 75);
 
   Pet dayPet = hatchedPet(4);
   dayPet.setClock(kNoonEpoch);
   dayPet.fullness = 80;
   dayPet.sleeping = false;
-  dayPet.syncClock(kNoonEpoch + 5UL * 60UL);
+  dayPet.ageMinutes = 0;
+  dayPet.syncClock(kNoonEpoch + 5UL * CARE_SLOW * 60UL);
   EXPECT_EQ(dayPet.fullness, 70);
 }
 
@@ -1240,7 +1252,8 @@ int main() {
   testCatchChanceAndRolls();
   testRespectCatchIsLimitedAndHasNoCareReward();
   testCareBonusCapsStreakContribution();
-  testFarewellAndRunawayReadiness();
+  testPetNeverLeaves();
+  testNeedsDecaySlowly();
   testBattleRewardsAndProgression();
   testExpeditionStartAndClaim();
   testHoennExpeditionSitesSealsAndMedal();

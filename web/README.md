@@ -2,13 +2,19 @@
 
 ## Current public installer
 
-End users currently use:
+**TamaPoke Gentle** (this fork: the Pokémon never leaves, needs decay slowly):
 
-<https://shadowenemyx.github.io/TamaPoke/web/>
+<https://individualcontributordev.github.io/TamaPoke/>
 
-`index.html` and `manifest.json` serve the public Gen‑3 release `1.36.2` with
-Pokémon #1–386. They expose no debug controls and require the complete two-step
-firmware-plus-sprites installation.
+`index.html` and `manifest.json` serve firmware `1.36.2-gentle` with Pokémon
+#1–386. They expose no debug controls. Step 2 (sprites) is needed only for a new
+or empty microSD; a firmware update keeps the save with **Erase device** off.
+
+GitHub Actions builds and publishes the site on every push to `main`
+(`.github/workflows/pages.yml` → `tools/build_pages.sh`). The firmware parts are
+compiled in CI and are not committed; the page, manifest and sprite packs come
+from this folder. Pages source must be set to **GitHub Actions** in the repo
+settings.
 
 ## Gen‑3 pages
 
@@ -38,7 +44,8 @@ the two-package sequence keeps every GitHub-hosted file below the limit.
 ## Build and validate
 
 ```bash
-bash tools/build_web.sh --check         # current public Gen 3
+bash tools/build_pages.sh               # CI build -> _site/
+bash tools/build_web.sh --check         # local Gen 3 build check
 bash tools/build_web_local.sh --check   # Gen 3 debug
 bash tools/build_web_gen2_legacy.sh --check # pinned historical Gen 2
 ```
@@ -72,8 +79,8 @@ state so the user can reconnect.
 
 ## Release policy
 
-The public flow must retain the mandatory two-step warning and the single,
-complete sprite button. `dev.html` and `manifest-local.json` must never replace
+The public flow keeps the single, complete sprite button; step 2 is labelled
+"new or empty microSD only". `dev.html` and `manifest-local.json` must never replace
 the public page or manifest.
 
 Sprites are from

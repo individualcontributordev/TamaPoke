@@ -23,3 +23,6 @@ web/firmware/tamapoke-*.bin
 
 # Local GitHub login leftover; never commit.
 .gh-auth/
+
+# CI output (tools/build_pages.sh)
+_site/

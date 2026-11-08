@@ -1,42 +1,38 @@
-# TamaPoke
+# TamaPoke Gentle
 
-[![Flash in browser](https://img.shields.io/badge/flash-in%20browser-FF6B00?logo=googlechrome&logoColor=white)](https://shadowenemyx.github.io/TamaPoke/web/)
+[![Flash in browser](https://img.shields.io/badge/flash-in%20browser-2F9D8A?logo=googlechrome&logoColor=white)](https://individualcontributordev.github.io/TamaPoke/)
 [![MakerWorld](https://img.shields.io/badge/MakerWorld-3D%20case-00AE42?logo=bambulab&logoColor=white)](https://makerworld.com/es/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi)
 ![Board](https://img.shields.io/badge/board-ESP32--S3%20round%20AMOLED-E7352C?logo=espressif&logoColor=white)
-![Firmware](https://img.shields.io/badge/firmware-v1.36.2-4F93C4)
+![Firmware](https://img.shields.io/badge/firmware-v1.36.2--gentle-2F9D8A)
 ![Pokédex](https://img.shields.io/badge/Pok%C3%A9mon-386-E8503A)
 ![Languages](https://img.shields.io/badge/languages-6-FFCB05)
 
-TamaPoke is a Pokémon-inspired virtual pet for the
-**Waveshare ESP32-S3-Touch-AMOLED-1.75**. This is ShadowEnemyx's expanded fork.
+A relaxed fork of [ShadowEnemyx/TamaPoke](https://github.com/ShadowEnemyx/TamaPoke)
+(a Pokémon-inspired virtual pet for the **Waveshare ESP32-S3-Touch-AMOLED-1.75**)
+made for small trainers.
 
-> Use only the ShadowEnemyx installer linked here. The upstream project is
-> credited as the original source, but its installer contains a different build.
+- **Your Pokémon never leaves.** Farewell, runaway and release are disabled
+  (the long-press release dialog is gone).
+- **Care breaks of 5–6 hours are fine.** FOOD, JOY, ENE and HYG decay once per
+  12 game minutes, about 6 h from full to hungry instead of ~1.5 h. Poop is
+  rarer, so hygiene falls slower too. Tune it with `CARE_SLOW` in `pet.h`.
 
-## Install the current public version
+## Install
 
-### [Open the ShadowEnemyx web installer](https://shadowenemyx.github.io/TamaPoke/web/)
+### [Open the TamaPoke Gentle installer](https://individualcontributordev.github.io/TamaPoke/)
 
-The hosted installer serves firmware `1.36.2` with all 386 Pokémon from
-Generations 1–3. Use desktop **Chrome or Edge**:
+Use desktop **Chrome or Edge**:
 
-1. Connect the Waveshare board by USB and install the firmware.
-2. When updating, leave **Erase device unchecked** to preserve the save.
-3. Reconnect the board in step 2 and load the sprites onto the microSD.
+1. Connect the board by USB and flash the firmware. **Keep Erase device
+   unchecked** to keep the save.
+2. New or empty microSD only: reconnect and load the sprites (all 386 Pokémon).
 
-No ZIP, Arduino project or manual `.bin` download is required.
+No ZIP, Arduino project or manual `.bin` download is required. The site is built
+from `main` by GitHub Actions ([`pages.yml`](.github/workflows/pages.yml)): it
+compiles the firmware, validates it and publishes it with the sprite packs.
 
-## Gen 3
-
-Gen 3 is now public. The hosted installer uses the tested, debug-free `1.36.2`
-firmware. The local `dev.html` page remains available only for development and
-hardware diagnostics.
-
-> [!WARNING]
-> **A Gen‑3 installation always has two required steps.** Flashing firmware alone
-> is incomplete. The sprite button must then copy both `sprites.pak` (#1–251)
-> and `sprites-gen3-update.pak` (#252–386 plus the 386-entry thumbnail index) to
-> the microSD. There is intentionally no single `sprites-gen3-full.pak` file.
+> Use only this installer for the Gentle firmware. Other TamaPoke installers
+> flash builds where the Pokémon can leave.
 
 ## Highlights
 
@@ -74,13 +70,12 @@ the cadence filter confirms real rhythmic steps. Single bumps are rejected.
 - Swipe up: Profile, Personality, Daily, Box, Battle, Medals, Progress,
   Expedition and Steps/Trail cards.
 - Swipe down: clock, language, sound, power saving and help.
-- Hold the Pokémon for three seconds: release dialog.
 - Short PWR press: display on/off. Long PWR press: full power-off.
 
-Four needs decay over time: **FOOD, JOY, ENE and HYG**. Evolution requires the
-species' level and at least three of those four values strictly above 40.
-Evolution, farewell, release and runaway are always shown as decisions and do
-not complete unseen in the background.
+Four needs decay slowly over time: **FOOD, JOY, ENE and HYG**. Evolution requires
+the species' level and at least three of those four values strictly above 40.
+Evolution is always shown as a decision. The Pokémon never leaves, even if it is
+neglected for days. Serial debug commands `BYE`, `RUN` and `ABANDON` still exist.
 
 ## Hardware
 
@@ -95,7 +90,7 @@ the separate `1.75C` is a different board.
 
 ## Developer builds
 
-Public release `1.36.2` includes the Hoenn expedition sites and the optional
+Release `1.36.2-gentle` includes the Hoenn expedition sites and the optional
 250/500/1,000-step tour goals. The local debug build is
 `1.36.2-hoenn-walk-local`; see [local test notes](HOENN_WALK_LOCAL.md).
 
@@ -108,9 +103,11 @@ FQBN="esp32:esp32:esp32s3:CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,PartitionScheme=
 Validated toolchain: ESP32 Arduino core `3.3.10`, GFX Library for Arduino
 `1.6.7`, SensorLib `0.4.1` and XPowersLib `0.3.3`.
 
-Build and validate without replacing installer artifacts:
+Build and validate without replacing installer artifacts. `tools/build_pages.sh`
+is what CI runs; it writes the publishable site to `_site/`.
 
 ```bash
+bash tools/build_pages.sh               # Gentle site -> _site/
 bash tools/build_web.sh --check         # current public Gen 3, 386 Pokémon
 bash tools/build_web_local.sh --check   # Gen 3 debug build, 386 Pokémon
 bash tools/build_web_gen2_legacy.sh --check # pinned historical Gen 2 check
@@ -170,6 +167,7 @@ endorsed by Nintendo, Game Freak or The Pokémon Company.
 
 - Original project: [socquique/TamaPoke](https://github.com/socquique/TamaPoke)
 - Expanded fork and installer: [ShadowEnemyx/TamaPoke](https://github.com/ShadowEnemyx/TamaPoke)
+- Gentle fork (no leaving, relaxed pace): [individualcontributordev/TamaPoke](https://github.com/individualcontributordev/TamaPoke)
 - Animated pixel art: [PMD SpriteCollab](https://github.com/PMDCollab/SpriteCollab), CC BY-NC 4.0
 - 3D Pokéball case/remix: [MakerWorld](https://makerworld.com/es/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi), CC BY-NC-SA
 - Source code: [MIT](LICENSE)

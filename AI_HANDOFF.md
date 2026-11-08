@@ -1,6 +1,6 @@
 # TamaPoke Expanded - AI Handoff
 
-Stand: 2026-11-05 (Versionsangaben abgeglichen; Chronik bis 1.36.1 und lokaler 1.36.2-Kandidat ergänzt)
+Stand: 2026-11-08 (Fork „TamaPoke Gentle“ ergänzt; Versionsangaben abgeglichen; Chronik bis 1.36.1 und lokaler 1.36.2-Kandidat ergänzt)
 
 ## Projekt und Hardware
 
@@ -14,6 +14,13 @@ das Waveshare ESP32-S3 Touch AMOLED 1.75. Es ist ein Fork von
   Hoenn-Expeditionen mit Schrittzielen, siehe `HOENN_WALK_LOCAL.md`)
 - Öffentlicher Gen-3-Release: `1.36.2` (über
   `TAMAPOKE_GEN3_RELEASE`, ohne lokale Debugbefehle)
+- **Gentle-Fork** (`individualcontributordev/TamaPoke`, Release-Version `1.36.2-gentle`):
+  Die Kreatur verlässt den Spieler nie (`canFarewellNow()`/`canRunawayNow()` liefern
+  `false`, der 3-s-Halte-Dialog ist entfernt; seriell bleiben `BYE`/`RUN`/`ABANDON`).
+  Bedürfnisse sinken nur alle `CARE_SLOW` (12) Spielminuten, ca. 6 h zwischen Pflegen.
+  Der Installer wird nicht mehr lokal committet, sondern von
+  `.github/workflows/pages.yml` (`tools/build_pages.sh`) gebaut und über GitHub Pages
+  veröffentlicht. Schritt 2 (Sprites) ist dort nur für neue/leere microSD nötig.
 - Board: ESP32-S3, 16 MB Flash, OPI PSRAM, rundes 466x466 AMOLED, CST9217 Touch,
   PCF85063 RTC, AXP2101 PMU, ES8311 Audio
 - Validierte Toolchain: ESP32-Core 3.3.10, Arduino_GFX 1.6.7,

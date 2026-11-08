@@ -137,6 +137,7 @@ void Pet::syncClock(uint32_t nowEpoch) {
       if (ageMinutes % 3 == 0) hygiene = dropTo(hygiene, 1, 45);
       continue;
     }
+    if (ageMinutes % CARE_SLOW) continue;  // mismo ritmo relajado que en vivo
     uint32_t minuteEpoch = seen + (i + 1UL) * 60UL;
     fullness = dropTo(fullness, nightFoodDrop(minuteEpoch), 15);
     energy = dropTo(energy, 1, 15);
@@ -199,13 +200,16 @@ void Pet::tick() {
 
   if (ageMinutes % MINUTES_PER_LEVEL == 0) sfxPlay(SFX_LEVEL);  // subio de nivel (despierto)
 
-  fullness = clamp100(fullness - nightFoodDrop(lastSeenEpoch));
-  energy = clamp100(energy - 1);
-  if (fullness > 40 && poops < 3 && random(100) < 15) poops++;
+  bool careTick = ageMinutes % CARE_SLOW == 0;
+  if (careTick) {
+    fullness = clamp100(fullness - nightFoodDrop(lastSeenEpoch));
+    energy = clamp100(energy - 1);
+    if (fullness > 40 && poops < 3 && random(100) < 5) poops++;
 
-  hygiene = clamp100(hygiene - 1 - 4 * poops);
-  // el sobrepeso da pereza: la energia cae el doble
-  if (weight > 50) energy = clamp100(energy - 1);
+    hygiene = clamp100(hygiene - 1 - poops);
+    // el sobrepeso da pereza: la energia cae el doble
+    if (weight > 50) energy = clamp100(energy - 1);
+  }
   if (weight > 0 && ageMinutes % 3 == 0) weight--;
 
   // la disciplina forja la defensa: 12 h seguidas bien cuidado = +1 DEF
@@ -218,10 +222,12 @@ void Pet::tick() {
     goodTicks = 0;
   }
 
-  int dJoy = -1;
-  if (fullness < 30) dJoy -= 2;
-  if (hygiene < 30) dJoy -= 2;
-  joy = clamp100(joy + dJoy);
+  if (careTick) {
+    int dJoy = -1;
+    if (fullness < 30) dJoy -= 2;
+    if (hygiene < 30) dJoy -= 2;
+    joy = clamp100(joy + dJoy);
+  }
 
   // Descuido: dejar una estadistica por los suelos cuenta como error de
   // cuidado (con enfriamiento para no contar el mismo descuido cada minuto)
@@ -652,15 +658,16 @@ bool Pet::tryRespectCatchWild(int16_t wildDex, uint8_t wildLevel, uint8_t petLev
 
 // forma final que ya cumplio su ciclo (7 dias): lista para despedirse. La
 // despedida la dispara el usuario con el boton (no salta sola, para que la vea)
+// la criatura nunca se va (ni despedida ni escapada ni soltar): un final triste
+// es demasiado para un nino pequeno
 bool Pet::canFarewellNow() const {
-  return !isEgg() && !sleeping && ceremony == CER_NONE &&
-         !hasEvolutionPath(speciesId) && ageMinutes >= FAREWELL_AGE_MIN;
+  return false;
 }
 
 // abandono total durante 1h: lista para escaparse. La dispara el usuario con el
 // boton (final triste); cuidarla un solo tick la salva (neglectTicks se resetea)
 bool Pet::canRunawayNow() const {
-  return !isEgg() && !sleeping && ceremony == CER_NONE && neglectTicks >= RUNAWAY_TICKS;
+  return false;  // ver canFarewellNow
 }
 
 void Pet::startFarewell() {

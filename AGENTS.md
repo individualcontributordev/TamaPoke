@@ -24,6 +24,8 @@ Verbindliche Versionen stehen im Code: `FW_VERSION` in `TamaPoke.ino`, `tools/bu
   `sprites-gen3-update.pak`) auf die microSD senden. `sprites-gen3-full.pak` existiert nicht und darf nirgends verlangt werden.
 - `web/dev.html`, `web/manifest-local.json` und `TAMAPOKE_LOCAL_TEST` gehören nie in den öffentlichen Installer
   (`web/index.html`, `web/manifest.json`). Der öffentliche Build enthält keine Debug-Befehle (`TESTMON`, `TESTEVO`, …).
+- Gentle-Fork: Die Kreatur darf nie gehen (kein Abschied, keine Flucht, kein Freilassen) und Pflege soll nur alle ~6 h nötig sein
+  (`CARE_SLOW` in `pet.h`). Der Installer wird per GitHub Actions gebaut (`tools/build_pages.sh`); Schritt 2 ist dort nur für leere microSD.
 - Keine historischen Firmware-Binaries massenhaft in Git aufnehmen; nur die vier Parts einer freigegebenen Version.
 - Keine originalen Pokémon-Cries, ROM-Samples oder urheberrechtlich geschützten Audio-Dateien; Audio bleibt synthetisch.
 - UI-Texte im Firmware-Code bleiben aus Font-Gründen weitgehend ASCII (keine Umlaute/Akzente).

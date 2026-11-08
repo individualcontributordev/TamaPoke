@@ -1,5 +1,8 @@
 # Credits
 
+TamaPoke Gentle is a fork of [ShadowEnemyx/TamaPoke](https://github.com/ShadowEnemyx/TamaPoke),
+which is based on [socquique/TamaPoke](https://github.com/socquique/TamaPoke).
+
 TamaPoke is a **non-commercial, personal-use** project. It does not sell or
 commercially redistribute any copyrighted material. Pokémon and all related
 names, designs and characters are trademarks and © of **Nintendo / Game Freak /

@@ -4,7 +4,7 @@
 
 **TamaPoke Gentle** (this fork: the Pokémon never leaves, needs decay slowly):
 
-<https://individualcontributordev.github.io/TamaPoke/>
+<https://individualcontributor.dev/TamaPoke/>
 
 `index.html` and `manifest.json` serve firmware `1.36.2-gentle` with Pokémon
 #1–386. They expose no debug controls. Step 2 (sprites) is needed only for a new

@@ -137,7 +137,7 @@ void Pet::syncClock(uint32_t nowEpoch) {
       if (ageMinutes % 3 == 0) hygiene = dropTo(hygiene, 1, 45);
       continue;
     }
-    if (ageMinutes % CARE_SLOW) continue;  // mismo ritmo relajado que en vivo
+    if (ageMinutes % CARE_SLOW) continue;  // same relaxed pace as live
     uint32_t minuteEpoch = seen + (i + 1UL) * 60UL;
     fullness = dropTo(fullness, nightFoodDrop(minuteEpoch), 15);
     energy = dropTo(energy, 1, 15);
@@ -1118,8 +1118,8 @@ uint8_t Pet::stepTrailRank() const {
 }
 
 uint16_t Pet::stepShinyChancePer4096() const {
-  // Wilde Shinies bleiben selten: 8/4096 = 1/512 ohne Bewegung, bei
-  // 5.000 Tagesschritten steigt der Tagesanteil auf maximal 32/4096.
+  // Wild shinies stay rare: 8/4096 = 1/512 without movement, at
+  // 5,000 daily steps the daily share rises to at most 32/4096.
   uint16_t units = 8;
   uint32_t daily = stepsToday / 210UL;
   if (daily > 24) daily = 24;
@@ -1150,8 +1150,8 @@ void Pet::recordStepReward(uint8_t index) {
   if (item < EXP_ITEM_COUNT && canReceiveExpeditionItem(item)) {
     itemCounts[item]++;
   } else if (isEgg() || ceremony != CER_NONE) {
-    // Ein Ei hat noch keine Stats. Die Belohnung wird nach dem Schlüpfen
-    // erneut versucht, damit volle Taschen keinen Fortschritt verschlucken.
+    // An egg has no stats yet. The reward is retried after hatching
+    // so that full bags do not swallow progress.
     pendingStepRewardMask |= bit;
   } else if (index == 0) {
     joy = clamp100((int)joy + 5);
@@ -1222,8 +1222,8 @@ uint8_t Pet::applyWalk(uint16_t steps, uint32_t nowEpoch) {
   if ((oldToday / 100UL) != (stepsToday / 100UL) ||
       (oldTotal / 100UL) != (stepsTotal / 100UL)) pendingSave = true;
 
-  // Schritte werden auch beim Ei und in der Zeremonie gezaehlt; nur die
-  // bisherigen JOY/BOND-Wirkungen brauchen ein aktives Pokemon.
+  // Steps are also counted during the egg and the ceremony; only the
+  // existing JOY/BOND effects need an active Pokemon.
   if (ceremony != CER_NONE || isEgg()) return 0;
 
   uint32_t d = today();
@@ -1582,8 +1582,8 @@ void Pet::save() {
   prefs.putUChar("mist", careMistakes);
   prefs.putBool("sleep", sleeping);
   prefs.putUChar("lend", lastEnd);
-  // millis()-Deadlines sind nach einem Neustart ungueltig. Der Marker sorgt
-  // dafuer, dass ein bereits begonnener Abschied beim Boot sauber endet.
+  // millis() deadlines are invalid after a restart. The marker ensures
+  // that a farewell that already began ends cleanly at boot.
   prefs.putUChar("cerp", ceremony);
   if (lastSeenEpoch) prefs.putUInt("seen", lastSeenEpoch);
   prefs.putBytes("dexreg", dexReg, sizeof(dexReg));

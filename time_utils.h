@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-// Sichere Vergleiche fuer millis()-Deadlines. Durch die signed Differenz
-// funktionieren sie auch, wenn der 32-Bit-Zaehler nach rund 49 Tagen umspringt.
+// Safe comparisons for millis() deadlines. Thanks to the signed difference
+// they also work when the 32-bit counter wraps after about 49 days.
 inline bool deadlineActive(uint32_t now, uint32_t deadline) {
   return deadline != 0 && (int32_t)(now - deadline) < 0;
 }

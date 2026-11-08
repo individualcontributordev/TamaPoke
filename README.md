@@ -1,6 +1,6 @@
 # TamaPoke Gentle
 
-[![Flash in browser](https://img.shields.io/badge/flash-in%20browser-2F9D8A?logo=googlechrome&logoColor=white)](https://individualcontributordev.github.io/TamaPoke/)
+[![Flash in browser](https://img.shields.io/badge/flash-in%20browser-2F9D8A?logo=googlechrome&logoColor=white)](https://individualcontributor.dev/TamaPoke/)
 [![MakerWorld](https://img.shields.io/badge/MakerWorld-3D%20case-00AE42?logo=bambulab&logoColor=white)](https://makerworld.com/es/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi)
 ![Board](https://img.shields.io/badge/board-ESP32--S3%20round%20AMOLED-E7352C?logo=espressif&logoColor=white)
 ![Firmware](https://img.shields.io/badge/firmware-v1.36.2--gentle-2F9D8A)
@@ -19,7 +19,7 @@ made for small trainers.
 
 ## Install
 
-### [Open the TamaPoke Gentle installer](https://individualcontributordev.github.io/TamaPoke/)
+### [Open the TamaPoke Gentle installer](https://individualcontributor.dev/TamaPoke/)
 
 Use desktop **Chrome or Edge**:
 
@@ -157,8 +157,7 @@ git diff --check
 
 Hardware remains the final authority for display clipping, touch edges, IMU,
 speaker volume, microSD transfer and save retention. Core Gen‑3 flashing,
-sprites and step counting have already passed the owner's hardware smoke test;
-the extended release checklist is tracked in `AI_HANDOFF.md`.
+sprites and step counting have already passed the owner's hardware smoke test.
 
 ## Credits and license
 

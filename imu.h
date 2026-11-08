@@ -2,14 +2,14 @@
 
 #include <Arduino.h>
 
-// QMI8658 auf dem Waveshare I2C-Bus. Ohne Interrupt-Pin: nur pollen.
+// QMI8658 on the Waveshare I2C bus. No interrupt pin: poll only.
 bool imuBegin();
 bool imuOk();
 void imuPoll(uint32_t nowMs, uint16_t intervalMs);
-bool imuShakeEdge();          // einmaliger Impuls, verbraucht das Event
-uint16_t imuTakeSteps();      // Delta seit dem letzten Aufruf
-float imuLastMagG();          // letzte |a| in g, 0 wenn unbekannt
+bool imuShakeEdge();          // one-shot impulse, consumes the event
+uint16_t imuTakeSteps();      // delta since the last call
+float imuLastMagG();          // last |a| in g, 0 if unknown
 float imuLastGyroDps();       // letzte |gyro| in deg/s
-uint8_t imuAddr();            // 0 wenn nicht gefunden
-uint32_t imuPedometer();      // Rohzaehler des Chips
-uint32_t imuSoftwarePedometer(); // eigener Zaehler aus Beschleunigungswerten
+uint8_t imuAddr();            // 0 if not found
+uint32_t imuPedometer();      // raw counter of the chip
+uint32_t imuSoftwarePedometer(); // own counter from acceleration values

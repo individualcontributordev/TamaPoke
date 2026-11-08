@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-// Tageszeit aus der RTC-Epoch (UTC, wie rtcEpoch()/mktime).
-// Stunde 13 ist der Fallback, wenn noch keine gültige Uhrzeit existiert.
+// Time of day from the RTC epoch (UTC, like rtcEpoch()/mktime).
+// Hour 13 is the fallback when no valid time exists yet.
 inline int sceneHourFromEpoch(uint32_t epoch) {
   return epoch ? (int)((epoch / 3600UL) % 24UL) : 13;
 }
@@ -32,8 +32,8 @@ inline bool isNightPhase(uint8_t phase) {
   return phase == 3;
 }
 
-// Visuelle Nacht: schlafend oder Himmel nach 20:00 / vor 6:00.
-// Die Spielphase "Nacht" beginnt erst um 22:00.
+// Visual night: asleep, or sky after 20:00 / before 6:00.
+// The game phase "night" only starts at 22:00.
 inline bool isVisualNight(int hour, bool sleeping) {
   return sleeping || hour < 6 || hour >= 20;
 }

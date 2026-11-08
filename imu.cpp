@@ -63,20 +63,20 @@ static void detectSoftwareStep(uint32_t nowMs, float mag) {
 
   float signal = mag - walkGravity;
   float motion = fabsf(signal);
-  // In Ruhe folgt die Basislinie zuegig der Sensorabweichung. Bei Bewegung
-  // bleibt sie traege, damit der Gehimpuls nicht weggefiltert wird.
+  // At rest the baseline follows the sensor drift quickly. During motion
+  // it stays sluggish so the walking impulse is not filtered out.
   float alpha = motion < 0.08f ? 0.12f : 0.025f;
   walkGravity += (mag - walkGravity) * alpha;
   if (deadlineActive(nowMs, bootIgnoreUntil)) return;
 
-  // Nach jedem Impuls muss die Bewegung erst abklingen. Das verhindert, dass
-  // Aufprall und Rueckschwung desselben Schritts doppelt gezaehlt werden.
+  // After each impulse the motion must first decay. This prevents the
+  // impact and rebound of the same step from being counted twice.
   if (walkPeak) {
     if (signal <= 0.025f) walkPeak = false;
     return;
   }
-  // Nur den positiven Aufprall zaehlen. Der anschliessende negative Ausschlag
-  // ist Teil desselben Schritts und darf keinen zweiten Impuls erzeugen.
+  // Count only the positive impact. The following negative swing
+  // is part of the same step and must not trigger a second impulse.
   if (signal < 0.085f) return;
   walkPeak = true;
 
@@ -90,8 +90,8 @@ static void detectSoftwareStep(uint32_t nowMs, float mag) {
 
   walkLastPeak = nowMs;
   if (walkCadence == 1) {
-    // Erst zwei rhythmische Impulse bestaetigen Gehen; dann die beiden ersten
-    // Schritte gemeinsam freigeben. Einzelne Stoesse bleiben wirkungslos.
+    // Only two rhythmic impulses confirm walking; then release the first two
+    // steps together. Single bumps have no effect.
     bankSteps(2);
     walkCadence = 2;
   } else {
@@ -102,9 +102,9 @@ static void detectSoftwareStep(uint32_t nowMs, float mag) {
 
 static bool probeAndStart(uint8_t addr) {
   if (!qmi.begin(Wire, addr, IIC_SDA, IIC_SCL)) return false;
-  // Der Hardware-Pedometer ist fuer 2G / 62,5 Hz abgestimmt (wie im offiziellen
-  // SensorLib-Beispiel). Mit 4G / 125 Hz blieben seine Zeit- und
-  // Spitzenschwellen auf echter Hardware praktisch stumm.
+  // The hardware pedometer is tuned for 2G / 62.5 Hz (as in the official
+  // SensorLib example). With 4G / 125 Hz its time and
+  // peak thresholds stayed practically silent on real hardware.
   qmi.configAccelerometer(SensorQMI8658::ACC_RANGE_2G,
                           SensorQMI8658::ACC_ODR_62_5Hz,
                           SensorQMI8658::LPF_MODE_0);
@@ -134,22 +134,22 @@ bool imuBegin() {
   shakePending = false;
   lastPoll = 0;
 
-  // Board-Schema: 0x6B. 0x6A ist die alternative SA0-Adresse.
+  // Board schematic: 0x6B. 0x6A is the alternative SA0 address.
   if (!probeAndStart(QMI8658_L_SLAVE_ADDRESS) &&
       !probeAndStart(QMI8658_H_SLAVE_ADDRESS)) {
     Serial.println("QMI8658 no detectado");
     return false;
   }
 
-  // Vier zusammenhaengende Schritte reichen fuer den Einstieg; der Sensor
-  // meldet jeden validierten Schritt sofort statt in Viererpaketen. So werden
-  // kurze Gehstrecken im Haus sichtbar, ohne beliebiges Schuetteln zu zaehlen.
+  // Four consecutive steps are enough to start; the sensor
+  // reports each validated step immediately instead of in groups of four. This makes
+  // short walks indoors visible without counting arbitrary shaking.
   qmi.configPedometer(50, 200, 100, 200, 20, 4, 0, 1);
   if (qmi.enablePedometer()) {
     lastPed = qmi.getPedometerCounter();
     pedInited = true;
   }
-  // Pedometer-Config kann Accel/Gyro ausmachen: wieder anschalten.
+  // The pedometer config can turn accel/gyro off: turn them back on.
   qmi.enableAccelerometer();
   qmi.enableGyroscope();
 
@@ -166,8 +166,8 @@ void imuPoll(uint32_t nowMs, uint16_t intervalMs) {
   if (lastPoll && (uint32_t)(nowMs - lastPoll) < intervalMs) return;
   lastPoll = nowMs ? nowMs : 1;
 
-  // getDataReady() ist unzuverlaessig, wenn Accel- und Gyro-ODR nicht identisch
-  // sind (steht so in SensorLib). Rohregister lesen reicht fuer Shake.
+  // getDataReady() is unreliable when accel and gyro ODR are not identical
+  // (as noted in SensorLib). Reading the raw registers is enough for shake.
 
   float x = 0, y = 0, z = 0;
   bool accelRead = qmi.getAccelerometer(x, y, z);
@@ -180,23 +180,23 @@ void imuPoll(uint32_t nowMs, uint16_t intervalMs) {
     lastGyro = sqrtf(gx * gx + gy * gy + gz * gz);
   }
 
-  // Ruhe ~1 g. Ein normaler Ball-Schuettler liegt oft nur bei 1.4-1.8 g;
-  // Gyro faengt Drehen im Gehaeuse besser als der Accel allein.
+  // Rest ~1 g. A normal shake of the ball often only reaches 1.4-1.8 g;
+  // the gyro catches rotation in the case better than the accel alone.
   bool hot = lastMag >= 1.45f || lastGyro >= 80.0f;
   if (deadlineActive(nowMs, bootIgnoreUntil)) {
     return;
   }
-  // Die Schuettel-Entprellung darf nur das Shake-Event blockieren, nicht das
-  // Pedometer. Sonst konnte Gehen bei eingeschaltetem Display alle 40/80 ms
-  // die Schritt-Abfrage ueberspringen.
+  // The shake debounce may only block the shake event, not the
+  // pedometer. Otherwise walking with the display on could skip the step
+  // poll every 40/80 ms.
   if (hot && !deadlineActive(nowMs, shakeIgnoreUntil)) {
     shakePending = true;
     shakeIgnoreUntil = nowMs + 280;
   }
 
-  // Der interne Zaehler bleibt als Diagnose sichtbar. Gezaehlt wird bewusst
-  // nur die Software-Erkennung, weil der Hardware-Pedometer auf einigen Boards
-  // trotz erfolgreicher Aktivierung dauerhaft bei null bleibt.
+  // The internal counter stays visible as a diagnostic. Deliberately only
+  // the software detection counts, because the hardware pedometer on some boards
+  // stays at zero despite successful activation.
   if (pedInited) lastPed = qmi.getPedometerCounter();
 }
 

@@ -16,8 +16,8 @@
 #define CEREMONY_MS 10000UL                // duracion de la despedida en pantalla
 #define FAREWELL_AGE_MIN (3UL * 24 * 60)   // se despide a los 3 dias de juego (en forma final)
 #define RUNAWAY_TICKS 60                   // se escapa tras 1 h con TODO a cero
-// Ritmo relajado (crias pequenos): las necesidades bajan 1 vez cada CARE_SLOW min
-// (~6 h de comida llena a "tengo hambre"). 1 = ritmo original (~1,5 h).
+// Relaxed pace (small children): needs drop once every CARE_SLOW min
+// (~6 h from full food to "hungry"). 1 = original pace (~1.5 h).
 #define CARE_SLOW 12
 
 // ceremonias de fin de ciclo
@@ -66,8 +66,8 @@ enum ExpeditionSite : uint8_t {
 #define EXP_ITEM_COUNT 4
 #define EXP_ITEM_MAX 3
 
-// Belohnungen der taeglichen Schritt-Meilensteine. Die Werte werden nur
-// kurzzeitig fuer die Anzeige gespeichert; der eigentliche Fortschritt liegt
+// Rewards for the daily step milestones. The values are only
+// stored briefly for display; the actual progress lives
 // in stepDailyRewardMask/stepMilestoneMask.
 enum StepRewardEvent : uint8_t {
   STEP_REWARD_NONE = 0,
@@ -78,7 +78,7 @@ enum StepRewardEvent : uint8_t {
 };
 #define STEP_DAILY_GOAL_COUNT 3
 
-// Zustand fuer den kleinen Expeditions-Hinweis auf dem Hauptscreen.
+// State of the small expedition hint on the main screen.
 enum ExpeditionHudState : uint8_t {
   EXP_HUD_HIDDEN = 0,
   EXP_HUD_ACTIVE,
@@ -155,7 +155,7 @@ public:
   uint16_t typeHi = 0;     // record del minijuego type match
   uint16_t battleWins = 0, battleLosses = 0;
   uint16_t battleStreak = 0, bestBattleStreak = 0;
-  uint8_t collectionFrame = 0;  // 0=Basis, weitere Rahmen ueber Dex-Meilensteine
+  uint8_t collectionFrame = 0;  // 0=base, more frames via dex milestones
   uint32_t lastPetInteractMinute = 0;
   uint16_t dexRewardMask = 0;
   uint32_t dailyGoalDay = 0;
@@ -172,8 +172,8 @@ public:
   uint8_t expeditionBonusItem = EXP_ITEM_NONE;
   static uint16_t expeditionStepGoal(uint8_t minutes);
   bool expeditionWalkBonusEarned() const;
-  // Schrittfortschritt des Spielers: heute wird am RTC-Tag zurueckgesetzt,
-  // der Gesamtwert bleibt ueber Eier und neue Pokemon erhalten.
+  // Player step progress: today resets on the RTC day,
+  // the total is kept across eggs and new Pokemon.
   uint32_t stepsToday = 0;
   uint32_t stepsTotal = 0;
   uint32_t stepDay = 0;
@@ -362,7 +362,7 @@ private:
   uint8_t ticksSinceSave = 0;
   bool pendingSave = false;     // guardado periodico pendiente de volcar
   uint8_t evoDeclinedLv = 0;    // "mantener forma": no ofrecer hasta el siguiente nivel
-  uint32_t evoDeclinedAge = 0;  // auf Lv.100: wieder anbieten ab diesem Alter
+  uint32_t evoDeclinedAge = 0;  // at Lv.100: offer again from this age
   uint32_t farDeclinedAge = 0;  // "quedaros juntos": no ofrecer despedida hasta esta edad
   bool starterPick = false;     // primera partida: esperando que el jugador elija inicial
   uint8_t neglectTicks = 0;

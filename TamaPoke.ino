@@ -482,8 +482,8 @@ bool lightSleepAllowed(uint32_t now) {
 uint16_t lightSleepMs(uint32_t now) {
   if (!lightSleepAllowed(now)) return 0;
   uint16_t maxMs = screenOff ? 750 : (dimStage >= 2 ? 300 : 180);
-  // Die Software-Schritterkennung braucht auch bei dunklem Display regelmaessige
-  // Rohwerte. Kurze Light-Sleep-Intervalle erhalten sie ohne Dauer-Rendering.
+  // The software step detection needs regular raw values even with a dark display.
+  // Short light-sleep intervals keep them coming without constant rendering.
   if (imuOk() && maxMs > 70) maxMs = 70;
   uint16_t ri = renderIntervalMs();
   uint32_t sinceRender = now - lastRender;
@@ -542,9 +542,9 @@ void loop() {
   uint32_t stepsBefore = pet.stepsToday;
   uint32_t stepDayBefore = pet.stepDay;
   uint16_t walked = imuTakeSteps();
-  // Die Erkennung filtert bereits Einzelstoesse und verlangt Geh-Rhythmus.
-  // Deshalb auch direkt nach dem Abziehen von USB zaehlen: Der gecachte
-  // VBUS-Status kann sonst bis zu zehn Sekunden echte Schritte verwerfen.
+  // The detection already filters single bumps and requires a walking rhythm.
+  // So also count right after USB is unplugged: the cached
+  // VBUS state could otherwise discard real steps for up to ten seconds.
   if (walked) {
     pet.applyWalk(walked, rtcEpoch());
     if (cardOpen && cardPage == 7) cardDirty = true;
@@ -574,8 +574,8 @@ void loop() {
     }
   }
 
-  // Die Expeditionskarte bleibt sonst als statischer Screen stehen. Ein
-  // sekundenweises Dirty-Render ist nur aktiv, waehrend ihr Countdown sichtbar ist.
+  // The expedition card would otherwise stay as a static screen. A
+  // per-second dirty render is only active while its countdown is visible.
   static uint32_t lastExpeditionCardTick = 0;
   if (cardOpen && cardPage == 7 && now - lastExpeditionCardTick >= 1000UL) {
     lastExpeditionCardTick = now;
@@ -1446,8 +1446,8 @@ void onTap(int16_t x, int16_t y) {
   if (inPetZone(x, y)) {
     Serial.println("PET");
     uint8_t r = pet.interactPet(currentDayPhase() == 2);
-    // Der Spezies-Chirp ist direkte Rueckmeldung fuer jeden Pet-Tap. Er darf
-    // nicht von der zehnminuetigen Pflege-Belohnung abhaengen.
+    // The species chirp is direct feedback for every pet tap. It must
+    // not depend on the ten-minute care reward.
     if (!pet.sleeping && audioMode() == SOUND_FULL) speciesChirpPlay(pet.speciesId, true);
     if (r == PET_INTERACT_NONE) return;
     StrId msg = S_WAIT;
@@ -2554,8 +2554,8 @@ void renderMemoGame() {
   if (memoFailUntil) snprintf(phase, sizeof(phase), "%s", T(S_MEMO_WRONG));
   else if (memoShowing) snprintf(phase, sizeof(phase), "%s", T(S_MEMO_WATCH));
   else snprintf(phase, sizeof(phase), T(S_MEMO_TURN_FMT), memoInput + 1, memoLen);
-  // Freier Streifen zwischen den oberen und unteren Pads: dadurch bleibt die
-  // Anleitung auf dem runden Display klar lesbar und liegt nicht auf Farben.
+  // Free strip between the upper and lower pads: this keeps the
+  // instructions clearly readable on the round display and not on top of colors.
   gfx->fillRoundRect(78, 230, 310, 24, 7, night ? UI_BG_NIGHT : UI_BG_DAY);
   gfx->drawRoundRect(78, 230, 310, 24, 7, ink);
   gfx->setTextColor(memoFailUntil ? UI_BAR_BAD : (memoShowing ? UI_BAR_WARN : UI_BAR_OK));
@@ -3328,8 +3328,8 @@ void renderBattle() {
     gfx->setCursor(188 + (90 - (int)strlen(T(S_RUN_BATTLE)) * 12) / 2, 111);
     gfx->print(T(S_RUN_BATTLE));
   }
-  // Links neben den Typ-Chips des Gegners (Gift/Flug usw.). Oben rechts
-  // neben dem Namen liegt der Marker ausserhalb des runden Displays.
+  // Left of the opponent type chips (poison/flying etc.). Top right
+  // next to the name the marker would sit outside the round display.
   if (pet.isCaught(battleDex))
     drawCaughtBattleMarker(wildChipLeft - 36, 122);
 
@@ -3875,7 +3875,7 @@ uint16_t collectionFrameColor(uint8_t frame) {
 }
 
 void drawCaughtBattleMarker(int x, int y) {
-  // Gleicher 16er-Pokeball wie im Minispiel, 2x neben den Typ-Chips (32 px).
+  // Same 16px pokeball as in the minigame, 2x next to the type chips (32 px).
   drawMap(SPR_ICON_PLAY, 16, x, y, 2, false);
 }
 
@@ -3885,8 +3885,8 @@ static void drawFrameCorner(int x, int y, int sx, int sy, uint16_t color, uint8_
 }
 
 void drawCollectionFrame(uint8_t frame) {
-  // Rahmen liegen hinter dem Portrait: Der Sprite bleibt voll sichtbar und
-  // die frueheren ueberlagernden Kreise koennen nicht wieder auftauchen.
+  // Frames sit behind the portrait: the sprite stays fully visible and
+  // the earlier overlapping circles cannot reappear.
   if (frame >= pet.unlockedCollectionFrameCount()) frame = 0;
   const int left = 108, right = 358, top = 94, bottom = 302;
   uint16_t color = collectionFrameColor(frame);
@@ -4565,9 +4565,9 @@ static const int EXP_HUD_Y = 106;
 static const int EXP_HUD_W = 112;
 static const int EXP_HUD_H = 34;
 
-// Der obere Rand des runden Displays ist an den Ecken nicht sichtbar. Der
-// Schritt-Chip sitzt deshalb links ueber dem Namen, innerhalb der Kreisflaeche;
-// rechts bleibt der Expeditions-Hinweis frei.
+// The top edge of the round display is not visible at the corners. The
+// step chip therefore sits left above the name, inside the circle;
+// the expedition hint stays free on the right.
 static const int STEP_HUD_X = 130;
 static const int STEP_HUD_Y = 24;
 static const int STEP_HUD_W = 126;

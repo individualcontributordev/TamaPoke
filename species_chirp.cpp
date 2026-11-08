@@ -50,9 +50,9 @@ bool speciesChirpProfile(int16_t dex, SpeciesChirpProfile *out) {
     (uint8_t)(74 + ((seed >> 1) & 0x0F)),
     (uint8_t)((seed >> 3) % 3),
   };
-  // Die dritte Frequenz enthaelt bewusst die Dexnummer direkt. Bis #251
-  // bleibt der bisherige Klang erhalten; Gen 3 bekommt einen separaten,
-  // hoerbaren Bereich, der innerhalb des sicheren Frequenzfensters bleibt.
+  // The third frequency deliberately contains the dex number directly. Up to #251
+  // the existing sound is kept; Gen 3 gets a separate,
+  // audible range that stays inside the safe frequency window.
   uint16_t dexPitch = dex <= 251 ? (uint16_t)(220 + dex * 9)
                                 : (uint16_t)(150 + (dex - 252) * 7);
   out->notes[2] = {

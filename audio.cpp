@@ -156,14 +156,14 @@ static const SfxDef SFX[SFX_COUNT] = {
 };
 
 static const uint8_t SFX_MIN_MODE[SFX_COUNT] = {
-  SOUND_FULL, // TAP: nur "viel"
+  SOUND_FULL, // TAP: full only
   SOUND_MED,  // EAT
-  SOUND_FULL, // PLAY: kleine Punkte/Klicks nur "viel"
+  SOUND_FULL, // PLAY: small dots/clicks full only
   SOUND_MED,  // HEART
-  SOUND_LOW,  // HATCH: grosses Ereignis
+  SOUND_LOW,  // HATCH: big event
   SOUND_LOW,  // EVOLVE
   SOUND_LOW,  // MEDAL
-  SOUND_LOW,  // DENY: wichtiges Feedback auch bei wenig
+  SOUND_LOW,  // DENY: important feedback also at low
   SOUND_LOW,  // BYE
   SOUND_LOW,  // LEVEL
   SOUND_LOW,  // BATTLE_WIN
@@ -339,9 +339,9 @@ void audioBegin() {
 void sfxPlay(uint8_t id) {
   if (!gReady || gMode == SOUND_OFF || !gQ || id >= SFX_COUNT || gMode < SFX_MIN_MODE[id]) return;
 
-  // Die Modi sollen sich spuerbar anfuehlen: "viel" spielt alles, "mittel"
-  // laesst schnelle Wiederholungen etwas aus, "wenig" bleibt bei grossen
-  // Ereignissen und klaren Warnungen.
+  // The modes should feel distinct: "full" plays everything, "medium"
+  // skips some rapid repeats, "low" stays with big
+  // events and clear warnings.
   uint32_t now = millis();
   if (gMode == SOUND_MED && !criticalSfx(id)) {
     if (now - gLastQueuedAt[gMode] < 180UL) return;

@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-// Eigene, synthetisierte Spezies-Chirps. Diese Profile enthalten keine
-// aufgenommenen oder ROM-abgeleiteten Pokemon-Audiodaten.
+// Own synthesized species chirps. These profiles contain no
+// recorded or ROM-derived Pokemon audio data.
 enum ChirpWave : uint8_t {
   CHIRP_SQUARE = 0,
   CHIRP_TRI,
@@ -24,6 +24,6 @@ struct SpeciesChirpProfile {
   uint8_t count;
 };
 
-// Liefert fuer jede enthaltene Dexnummer einen eigenen, melodischen Synthese-Ruf.
-// Ungueltige Dexnummern liefern false und erzeugen nie Audio.
+// Returns its own melodic synthesized call for every included dex number.
+// Invalid dex numbers return false and never produce audio.
 bool speciesChirpProfile(int16_t dex, SpeciesChirpProfile *out);

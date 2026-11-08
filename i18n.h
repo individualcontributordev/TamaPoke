@@ -84,11 +84,11 @@ enum StrId : uint8_t {
   S_RANK_KANTO, S_RANK_JOHTO, S_RANK_JOHTO_MASTER, S_RANK_COMPLETE,
   S_RANK_HOENN, S_RANK_COMPLETE_ALL,
   S_MEMO_WATCH, S_MEMO_TURN_FMT, S_MEMO_WRONG,
-  // kurze UI-Texte, die vorher als englische Literale im Sketch standen
+  // short UI texts that used to be English literals in the sketch
   S_PLAY, S_LEVEL_SHORT_FMT, S_ROUND_SHORT_FMT, S_RAISED_CAUGHT_FMT,
   S_STATUS_NEW, S_STATUS_FLASH_NO,
   S_GOOD_MORNING,
-  // Schrittzaehler und Trail-Belohnungen
+  // step counter and trail rewards
   S_STEPS, S_STEPS_TODAY_FMT, S_STEPS_TOTAL_FMT, S_TRAIL_RANK_FMT,
   S_SHINY_LUCK_FMT, S_CATCH_BONUS_FMT, S_STEP_GOAL_FMT, S_STEP_REWARD,
   S_EXP_COAST, S_EXP_VOLCANO, S_EXP_FOREST, S_EXP_SEALS_FMT,

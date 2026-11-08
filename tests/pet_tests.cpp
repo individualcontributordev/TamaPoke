@@ -70,7 +70,7 @@ static void testEvolutionRequiresLevelAndHealthyStats() {
   pet.ageMinutes = 15 * MINUTES_PER_LEVEL;
   pet.fullness = 39;
 
-  // Drei von vier Werten ueber 40 reichen jetzt aus.
+  // Three of four values above 40 are enough now.
   EXPECT_TRUE(pet.canEvolveNow());
   EXPECT_TRUE(pet.wantEvolveButton());
 
@@ -428,7 +428,7 @@ static void testCollectionRanksAndFrameSelection() {
   EXPECT_TRUE(pet.setCollectionFrame(2));
   EXPECT_EQ(pet.collectionFrame, 2);
 
-  pet.registerCaught(28);  // bereits bekannt: kein doppelter Fortschritt
+  pet.registerCaught(28);  // already known: no double progress
   EXPECT_EQ(pet.knownDexCount(), 25);
 }
 
@@ -953,7 +953,7 @@ static void testStepCounterRewardsAndDailyReset() {
   EXPECT_EQ(longWalk.stepTrailRank(), 2);
   EXPECT_EQ(longWalk.stepCatchBonus(), 5);
 
-  // Ein neuer RTC-Tag loescht nur den Tageswert, nicht den Gesamtwert.
+  // A new RTC day clears only the daily value, not the total.
   pet.setClock(kNoonEpoch + 86400UL);
   EXPECT_EQ(pet.stepsToday, 0U);
   EXPECT_EQ(pet.stepsTotal, 5000U);

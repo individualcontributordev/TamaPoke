@@ -3,7 +3,7 @@
 [![Flash in browser](https://img.shields.io/badge/flash-in%20browser-2F9D8A?logo=googlechrome&logoColor=white)](https://individualcontributor.dev/TamaPoke/)
 [![MakerWorld](https://img.shields.io/badge/MakerWorld-3D%20case-00AE42?logo=bambulab&logoColor=white)](https://makerworld.com/es/models/2937822-tamapoke-a-pokemon-pokeball-tamagotchi)
 ![Board](https://img.shields.io/badge/board-ESP32--S3%20round%20AMOLED-E7352C?logo=espressif&logoColor=white)
-![Firmware](https://img.shields.io/badge/firmware-v1.36.4--gentle-2F9D8A)
+![Firmware](https://img.shields.io/badge/firmware-v1.37.0--gentle-2F9D8A)
 ![Pokédex](https://img.shields.io/badge/Pok%C3%A9mon-386-E8503A)
 ![Languages](https://img.shields.io/badge/languages-6-FFCB05)
 
@@ -31,6 +31,20 @@ made for small trainers.
 ![Low needs show a red pulsing ring; tapping eat opens the feed menu](docs/feed-menu.png)
 
 ![The four foods: Berry, Banana, Fish and Meat](docs/food-icons.png)
+
+### Every other screen
+All screens share one style: a rounded cream card, a coloured title pill, and
+chunky buttons with a shadow. Pet card pages each get an accent colour with
+page dots and a chevron, bars replace number-only stats, and the minigames share
+one header (title, score and best chips, heart lives).
+
+![Pet card pages: profile, personality, daily, box, battle, medals, progress, expedition, steps](docs/ui-cards.png)
+
+![Minigames: catch, memo, clean, type, ball, sack](docs/ui-minigames.png)
+
+![Battle, game menu, gallery](docs/ui-battle-menus.png)
+
+![Starter pick, help, clock, name keyboard](docs/ui-misc.png)
 
 <sub>Images are rendered on a PC from the firmware's own drawing code (`ui_home.h`)
 with the real Wartortle sprite from the sprite pack (first Idle/Sleep frame, no
@@ -108,7 +122,7 @@ the separate `1.75C` is a different board.
 
 ## Developer builds
 
-Release `1.36.4-gentle` includes the Hoenn expedition sites and the optional
+Release `1.37.0-gentle` includes the Hoenn expedition sites and the optional
 250/500/1,000-step tour goals. The local debug build is
 `1.36.2-hoenn-walk-local`; see [local test notes](HOENN_WALK_LOCAL.md).
 

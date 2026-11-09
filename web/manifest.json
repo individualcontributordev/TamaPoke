@@ -1,16 +1,16 @@
 {
   "name": "TamaPoke Gentle",
-  "version": "1.36.4-gentle",
+  "version": "1.37.0-gentle",
   "released": "2026-11-08",
   "new_install_prompt_erase": true,
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "parts": [
-        { "path": "firmware/tamapoke-1.36.4-gentle-bootloader.bin", "offset": 0 },
-        { "path": "firmware/tamapoke-1.36.4-gentle-partitions.bin", "offset": 32768 },
-        { "path": "firmware/tamapoke-1.36.4-gentle-boot_app0.bin", "offset": 57344 },
-        { "path": "firmware/tamapoke-1.36.4-gentle-app.bin", "offset": 65536 }
+        { "path": "firmware/tamapoke-1.37.0-gentle-bootloader.bin", "offset": 0 },
+        { "path": "firmware/tamapoke-1.37.0-gentle-partitions.bin", "offset": 32768 },
+        { "path": "firmware/tamapoke-1.37.0-gentle-boot_app0.bin", "offset": 57344 },
+        { "path": "firmware/tamapoke-1.37.0-gentle-app.bin", "offset": 65536 }
       ]
     }
   ]

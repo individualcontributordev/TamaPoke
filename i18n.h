@@ -52,7 +52,7 @@ enum StrId : uint8_t {
   S_RUNAWAY_BTN,    // texto del boton de escapada por abandono (final triste)
   // dialogos de decision (evolucionar/mantener, despedirse/quedaros)
   S_EVO_Q, S_EVO_KEEP, S_FAR_Q, S_FAR_GO, S_FAR_STAY,
-  S_CHOOSE_STARTER, S_CHOOSE_REGION,  // seleccion inicial de region y starter
+  S_CHOOSE_REGION, S_CHOOSE_STARTER,  // seleccion inicial de region y starter
   S_NO_SPRITES, S_LOAD_SPRITES,  // aviso cuando falta el sprite en la SD
   S_WILD_BATTLE, S_FIGHT, S_RUN_BATTLE, S_WIN, S_LOSS, S_ROUNDS_FMT, S_DAMAGE_FMT, S_OK,
   S_ATTACK, S_DODGE, S_REST, S_HIT_FMT, S_MISSED, S_DODGED, S_RESTED_FMT, S_RAN,
